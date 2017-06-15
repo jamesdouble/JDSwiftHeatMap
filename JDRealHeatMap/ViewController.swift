@@ -13,7 +13,7 @@ class ViewController: UIViewController {
 
     var map:JDRealHeatMap?
     let testpointCoor = [CLLocationCoordinate2D(latitude: 23.0, longitude: 120),
-        CLLocationCoordinate2D(latitude: 25.0, longitude: 121)
+        CLLocationCoordinate2D(latitude: 24.0, longitude: 121)
         ]
     override func viewDidLoad() {
         super.viewDidLoad()

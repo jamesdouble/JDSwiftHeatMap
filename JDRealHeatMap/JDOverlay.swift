@@ -43,8 +43,24 @@ class JDHeatOverlay:NSObject, MKOverlay
     
     func caculateMaprect()
     {
-        let mappoint = MKMapPointForCoordinate(coordinate)
-        let rect = MKMapRectMake(mappoint.x, mappoint.y, 2000000, 2000000)
+        let firstmappoint:MKMapPoint = MKMapPointForCoordinate(HeatPointsArray[0].coordinate)
+        var MaxX = firstmappoint.x + HeatPointsArray[0].radiusInMKDistance
+        var MaxY = firstmappoint.y + HeatPointsArray[0].radiusInMKDistance
+        var MinX = firstmappoint.x - HeatPointsArray[0].radiusInMKDistance
+        var MinY = firstmappoint.y - HeatPointsArray[0].radiusInMKDistance
+        for heatpoint in HeatPointsArray
+        {
+            let heatmappoint = MKMapPointForCoordinate(heatpoint.coordinate)
+            let tMaxX = heatmappoint.x + heatpoint.radiusInMKDistance
+            let tMaxY = heatmappoint.y + heatpoint.radiusInMKDistance
+            let tMinX = heatmappoint.x - heatpoint.radiusInMKDistance
+            let tMinY = heatmappoint.y - heatpoint.radiusInMKDistance
+            MaxX = (tMaxX > MaxX) ? tMaxX : MaxX
+            MaxY = (tMaxY > MaxY) ? tMaxY : MaxY
+            MinX = (tMinX < MinX) ? tMinX : MinX
+            MinY = (tMinY < MinY) ? tMinY : MinY
+        }
+        let rect = MKMapRectMake(MinX, MinY, MaxX - MinX, MaxY - MinY)
         CaculatedMapRect = rect
     }
 
@@ -54,11 +70,18 @@ class JDHeatOverlay:NSObject, MKOverlay
         HeatPointsArray.append(Heatpoint)
     }
     
+    func insertHeatpoint(input:JDHeatPoint)
+    {
+         HeatPointsArray.append(input)
+        caculateMaprect()
+    }
+    
 }
 
 class JDHeatOverlayRender:MKOverlayRenderer
 {
     var rawdataproducer:JDRowDataProducer?
+    
     var transferCGRect:CGRect{
         return rect(for: overlay.boundingMapRect)
     }

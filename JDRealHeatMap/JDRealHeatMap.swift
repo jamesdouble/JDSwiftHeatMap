@@ -11,10 +11,9 @@ import MapKit
 
 class JDRealHeatMap:MKMapView
 {
-    var HeatPointsBuffer:[JDHeatPoint] = []
     var heatmapdelegate: JDHeatMapDelegate?
     
-    init(frame: CGRect,delegate d:JDHeatMapDelegate) {
+    public init(frame: CGRect,delegate d:JDHeatMapDelegate) {
         super.init(frame: frame)
         self.showsScale = true
         self.delegate = self
@@ -28,7 +27,7 @@ class JDRealHeatMap:MKMapView
     
     func refresh()
     {
-        HeatPointsBuffer = []
+        var HeatPointsBuffer:[JDHeatPoint] = []
         self.removeOverlays(overlays)
         //
         guard let heatdelegate = heatmapdelegate else {
@@ -43,24 +42,32 @@ class JDRealHeatMap:MKMapView
             let newHeatPoint:JDHeatPoint = JDHeatPoint(heat: heat, coor: coor, heatradius: raius)
             HeatPointsBuffer.append(newHeatPoint)
         }
+        //
+        func CluseOverlay()
+        {
+            for heatpoint in HeatPointsBuffer
+            {
+                for overlay in overlays
+                {
+                    let heatmkmappoint = MKMapPointForCoordinate(heatpoint.coordinate)
+                    let overlaymaprect = overlay.boundingMapRect
+                    if(MKMapRectContainsPoint(overlaymaprect, heatmkmappoint))
+                    {
+                        if let heatoverlay = overlay as? JDHeatOverlay
+                        {
+                            heatoverlay.insertHeatpoint(input: heatpoint)
+                            return
+                        }
+                    }
+                }
+                //Create New OverLay
+                let heatoverlay = JDHeatOverlay(first: heatpoint)
+                self.add(heatoverlay)
+            }
+        }
         CluseOverlay()
         self.setNeedsDisplay()
     }
-    
-    func CluseOverlay()
-    {
-        for heatpoint in HeatPointsBuffer
-        {
-            for overlay in overlays
-            {
-                
-            }
-            //Create New OverLay
-            let heatoverlay = JDHeatOverlay(first: heatpoint)
-            self.add(heatoverlay)
-        }
-    }
-   
 }
 
 extension JDRealHeatMap:MKMapViewDelegate
