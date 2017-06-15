@@ -9,7 +9,7 @@
 import Foundation
 import MapKit
 
-class JDRealHeatMap:MKMapView
+public class JDRealHeatMap:MKMapView
 {
     var heatmapdelegate: JDHeatMapDelegate?
     
@@ -21,15 +21,17 @@ class JDRealHeatMap:MKMapView
         refresh()
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func refresh()
+    public func refresh()
     {
         var HeatPointsBuffer:[JDHeatPoint] = []
         self.removeOverlays(overlays)
-        //
+        /*
+            Call the Delegate
+        */
         guard let heatdelegate = heatmapdelegate else {
             return
         }
@@ -70,7 +72,7 @@ class JDRealHeatMap:MKMapView
             }
         }
         CluseOverlay()
-        
+        //
         for overlay in overlays
         {
             if let heatoverlay = overlay as? JDHeatOverlay
@@ -78,12 +80,29 @@ class JDRealHeatMap:MKMapView
                 heatoverlay.lauchBuffer()
             }
         }
+        //
+        func reZoomRegion()
+        {
+            var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
+            for overlay in overlays
+            {
+                if let heatoverlayRect = (overlay as? JDHeatOverlay)?.boundingMapRect
+                {
+                    let size = heatoverlayRect.size.height * heatoverlayRect.size.width
+                    let biggestize = biggestRegion.size.height * biggestRegion.size.width
+                    biggestRegion = (size > biggestize) ? heatoverlayRect : biggestRegion
+                }
+            }
+            self.setRegion(MKCoordinateRegionForMapRect(biggestRegion), animated: true)
+        }
+        reZoomRegion()
+        self.setNeedsDisplay()
     }
 }
 
 extension JDRealHeatMap:MKMapViewDelegate
 {
-    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
+    public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
     {
         print(#function)
         if let jdoverlay = overlay as? JDHeatOverlay
@@ -94,7 +113,7 @@ extension JDRealHeatMap:MKMapViewDelegate
         return MKOverlayRenderer()
     }
     
-    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView?
+    public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView?
     {
         let aview = MKAnnotationView(annotation: annotation, reuseIdentifier: nil)
         aview.backgroundColor = UIColor.white
@@ -103,7 +122,9 @@ extension JDRealHeatMap:MKMapViewDelegate
     }
 }
 
-protocol JDHeatMapDelegate {
+
+
+public protocol JDHeatMapDelegate {
     func heatmap(HeatPointCount heatmap:JDRealHeatMap) -> Int
     func heatmap(HeatLevelFor index:Int) -> Int
     func heatmap(RadiusInKMFor index:Int) -> Double

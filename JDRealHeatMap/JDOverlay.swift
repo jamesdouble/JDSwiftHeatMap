@@ -140,7 +140,6 @@ class JDHeatOverlayRender:MKOverlayRenderer
         guard let overlay = overlay as? JDHeatOverlay else {
             return
         }
-        overlay.HeatPointNeedupdate = false
         print(#function + "\(overlay.HeatPointsArray.count)")
         var rowformArr:[RowFormHeatData] = []
         //Caculate Max heat
@@ -184,6 +183,7 @@ class JDHeatOverlayRender:MKOverlayRenderer
         }
         if(overlay.HeatPointNeedupdate)
         {
+            overlay.HeatPointNeedupdate = false
             caculateRowFormData()
         }
         
@@ -207,15 +207,12 @@ class JDHeatOverlayRender:MKOverlayRenderer
                     free(tempBuffer)
                 }
                 
-                
                 let rgbColorSpace:CGColorSpace = CGColorSpaceCreateDeviceRGB()
                 let alphabitmapinfo = CGImageAlphaInfo.premultipliedLast.rawValue
                 if let contextlayer:CGContext = CGContext(data: tempBuffer, width: producer.cgsize.width, height: producer.cgsize.height, bitsPerComponent: 8, bytesPerRow: producer.BytesPerRow, space: rgbColorSpace, bitmapInfo: alphabitmapinfo)
                 {
                     return contextlayer.makeImage()
                 }
-                
-            
                 print("alpha fail")
                 return nil
             }
