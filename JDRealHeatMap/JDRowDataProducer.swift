@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 
 struct RowFormHeatData {
-    var heatlevel:Int = 0
+    var heatInfluence:Float = 0
     var localCGpoint:CGPoint = CGPoint.zero
     var radius:CGFloat = 0
 }
@@ -75,7 +75,7 @@ class JDRowDataProducer:NSObject
                     
                     if(ratio > 0)
                     {
-                        destiny += ratio * 255
+                        destiny += ratio * 255 * heatpoint.heatInfluence
                     }
                     else
                     {

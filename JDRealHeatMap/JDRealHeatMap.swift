@@ -34,6 +34,7 @@ class JDRealHeatMap:MKMapView
             return
         }
         let datacount = heatdelegate.heatmap(HeatPointCount: self)
+        
         for i in 0..<datacount
         {
             let coor = heatdelegate.heatmap(CoordinateFor: i)
@@ -47,26 +48,36 @@ class JDRealHeatMap:MKMapView
         {
             for heatpoint in HeatPointsBuffer
             {
+                var breakbool:Bool = false
                 for overlay in overlays
                 {
-                    let heatmkmappoint = MKMapPointForCoordinate(heatpoint.coordinate)
                     let overlaymaprect = overlay.boundingMapRect
-                    if(MKMapRectContainsPoint(overlaymaprect, heatmkmappoint))
+                    //Cluse in Old Overlay
+                    if(MKMapRectIntersectsRect(overlaymaprect, heatpoint.MapRect))
                     {
                         if let heatoverlay = overlay as? JDHeatOverlay
                         {
                             heatoverlay.insertHeatpoint(input: heatpoint)
-                            return
+                            breakbool = true
+                            break
                         }
                     }
                 }
-                //Create New OverLay
+                if(breakbool) {continue}
+                //Create New Overlay,OverlayRender會一並被創造
                 let heatoverlay = JDHeatOverlay(first: heatpoint)
                 self.add(heatoverlay)
             }
         }
         CluseOverlay()
-        self.setNeedsDisplay()
+        
+        for overlay in overlays
+        {
+            if let heatoverlay = overlay as? JDHeatOverlay
+            {
+                heatoverlay.lauchBuffer()
+            }
+        }
     }
 }
 
@@ -111,7 +122,12 @@ struct JDHeatPoint
 {
     var HeatLevel:Int = 0
     var coordinate:CLLocationCoordinate2D = CLLocationCoordinate2D.init()
+    
     var radiusInKillometer:Double = 100
+    var MidMapPoint:MKMapPoint
+    {
+        return MKMapPointForCoordinate(self.coordinate)
+    }
     var radiusInMKDistance:Double
     {
         let locationdegree:CLLocationDegrees = coordinate.latitude
@@ -119,6 +135,13 @@ struct JDHeatPoint
         let KMPerPerMapPoint:Double = MeterPerMapPointInNowLati / 1000
         let MapPointPerKM:Double = 1 / KMPerPerMapPoint
         return radiusInKillometer * MapPointPerKM
+    }
+    
+    var MapRect:MKMapRect
+    {
+        let origin:MKMapPoint = MKMapPoint(x: MidMapPoint.x - radiusInMKDistance, y: MidMapPoint.y - radiusInMKDistance)
+        let size:MKMapSize = MKMapSize(width: 2 * radiusInMKDistance, height: 2 * radiusInMKDistance)
+        return MKMapRect(origin: origin, size: size)
     }
     
     init()
