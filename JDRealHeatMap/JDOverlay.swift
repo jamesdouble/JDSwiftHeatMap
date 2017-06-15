@@ -186,12 +186,7 @@ class JDHeatOverlayRender:MKOverlayRenderer
             overlay.HeatPointNeedupdate = false
             caculateRowFormData()
         }
-        
-        let mapCGRect = transferCGRect
-        let midPoint:CGPoint = CGPoint(x: mapCGRect.midX, y: mapCGRect.midY)
         context.saveGState()
-        context.setBlendMode(CGBlendMode.exclusion)
-        
         func getGrediantContextImage()->CGImage?
         {
             //More Detail
@@ -223,8 +218,8 @@ class JDHeatOverlayRender:MKOverlayRenderer
             }
             return nil
         }
-        
         tempimage = getGrediantContextImage()
+        let mapCGRect = transferCGRect
         context.draw(tempimage!, in: mapCGRect)
     }
     

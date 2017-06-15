@@ -39,21 +39,23 @@ class JDRowDataProducer:NSObject
         super.init()
         self.rowformdatas = rowHeatData
         self.cgsize = reduceSize(input: size)
+        RowData = Array.init(repeating: 0, count: 4 * cgsize.width * cgsize.height)
         produceRowData()
     }
     
     func reduceSize(input:CGSize)->IntSize
     {
-        let newWidth = Int(input.width) / 100000
-        let newHeight = Int(input.height) / 100000
+        let scale:CGFloat = 1000
+        let newWidth = Int(input.width) / Int(scale)
+        let newHeight = Int(input.height) / Int(scale)
         
         func reduceRowData()
         {
             for i in 0..<rowformdatas.count
             {
-                rowformdatas[i].localCGpoint.x /= 100000
-                rowformdatas[i].localCGpoint.y /= 100000
-                rowformdatas[i].radius /= 100000
+                rowformdatas[i].localCGpoint.x /= scale
+                rowformdatas[i].localCGpoint.y /= scale
+                rowformdatas[i].radius /= scale
             }
         }
         reduceRowData()
@@ -63,34 +65,41 @@ class JDRowDataProducer:NSObject
     func produceRowData()
     {
         print(#function + "w:\(cgsize.width),w:\(cgsize.height)")
-        
-        for h in 0..<cgsize.height
-        {
-            for w in 0..<cgsize.width
+        let bgthread = DispatchQueue(label: "rowdata")
+        bgthread.async {
+            var ByteCount:Int = 0
+            for h in 0..<self.cgsize.height
             {
-                var destiny:Float = 0
-                for heatpoint in rowformdatas
+                for w in 0..<self.cgsize.width
                 {
-                    let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
-                    let ratio:Float = 1 - (bytesDistanceToPoint / Float(heatpoint.radius))
-                    if(ratio > 0)
+                    var destiny:Float = 0
+                    for heatpoint in self.rowformdatas
                     {
-                        destiny += ratio * heatpoint.heatInfluence
+                        let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
+                        let ratio:Float = 1 - (bytesDistanceToPoint / Float(heatpoint.radius))
+                        if(ratio > 0)
+                        {
+                            destiny += ratio * heatpoint.heatInfluence
+                        }
+                        else
+                        {
+                            destiny += 0
+                        }
                     }
-                    else
-                    {
-                        destiny += 0
-                    }
+                    let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
+                    
+                    let redRow:UTF8Char = rgb.redRow
+                    let greenRow:UTF8Char = rgb.greenRow
+                    let BlueRow:UTF8Char = rgb.BlueRow
+                    let alpha:UTF8Char = UTF8Char(Int(destiny * 255))
+                    self.RowData[ByteCount] = redRow
+                    self.RowData[ByteCount+1] = greenRow
+                    self.RowData[ByteCount+2] = BlueRow
+                    self.RowData[ByteCount+3] = alpha
+                    ByteCount += 4
                 }
-                let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
-                
-                let redRow:UTF8Char = rgb.redRow
-                let greenRow:UTF8Char = rgb.greenRow
-                let BlueRow:UTF8Char = rgb.BlueRow
-                let alpha:UTF8Char = UTF8Char(Int(destiny * 255))
-                let aByte:[UTF8Char] = [redRow,greenRow,BlueRow,alpha]
-                RowData.append(contentsOf: aByte)
             }
+            
         }
     }
 }
@@ -108,10 +117,12 @@ class JDHeatColorMixer:NSObject
 {
     var colorArray:[UIColor]  = [UIColor.red,UIColor.yellow,UIColor.blue].reversed()
     
+    
     override init()
     {
         
     }
+    
     
     fileprivate func getRGB(inDestiny D:Float)->BytesRGB
     {
