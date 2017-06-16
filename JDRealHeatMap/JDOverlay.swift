@@ -18,7 +18,7 @@ class JDHeatOverlay:NSObject, MKOverlay
     var HeatPointsArray:[JDHeatPoint] = []
     var NewHeatPointBuffer:[JDHeatPoint] = []
     var CaculatedMapRect:MKMapRect?
-
+    var TestingID:Int = 0
     var coordinate: CLLocationCoordinate2D
     {
         return HeatPointsArray[0].coordinate
@@ -77,7 +77,6 @@ class JDHeatOverlay:NSObject, MKOverlay
     init(first Heatpoint:JDHeatPoint)
     {
         super.init()
-        print(#function)
         caculateMaprect(newPoint: Heatpoint)
         HeatPointsArray.append(Heatpoint)
     }

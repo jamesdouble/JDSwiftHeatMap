@@ -41,7 +41,6 @@ extension JDRealHeatMap:MKMapViewDelegate
 {
     public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
     {
-        print(#function)
         if let jdoverlay = overlay as? JDHeatOverlay
         {
             if let createdRender:JDHeatOverlayRender = missionController.Overlay_RenderPair[jdoverlay]

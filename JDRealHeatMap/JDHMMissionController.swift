@@ -17,8 +17,9 @@ class JDHeatMapMissionController:NSObject
     var Overlay_RenderPair:HeatRenderFor = [:]
     var Render_ProducerPair:ProducerFor = [:]
     var jdrealheatmap:JDRealHeatMap!
-    var MaxHeatLevelinWholeMap:Int = 0
+    //
     var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
+    var MaxHeatLevelinWholeMap:Int = 0
     //
     let missionThread = DispatchQueue(label: "MissionThread")
     
@@ -31,7 +32,7 @@ class JDHeatMapMissionController:NSObject
     **/
     func ExecuteRefreshMission()
     {
-        print(#function)
+       
         var HeatPointsBuffer:[JDHeatPoint] = []
         /*
            1.1 Call the Delegate
@@ -43,6 +44,7 @@ class JDHeatMapMissionController:NSObject
            1.2 Collect New Data
         */
         let datacount = heatdelegate.heatmap(HeatPointCount: jdrealheatmap)
+        var id:Int = 1
         for i in 0..<datacount
         {
             let coor = heatdelegate.heatmap(CoordinateFor: i)
@@ -70,8 +72,10 @@ class JDHeatMapMissionController:NSObject
                         }
                     }
                 }
-                //Create New Overlay,OverlayRender會一並被創造
+                //Create New Overlay,OverlayRender會一起創造
                 let heatoverlay = JDHeatOverlay(first: newHeatPoint)
+                heatoverlay.TestingID = id
+                id += 1
                 let render = JDHeatOverlayRender(heat: heatoverlay)
                 self.Overlay_RenderPair[heatoverlay] = render
                 jdrealheatmap.add(heatoverlay)
@@ -79,7 +83,7 @@ class JDHeatMapMissionController:NSObject
             CluseToOverlay()
         }
         /*
-         1.3  classification The Point
+         1.3.1 Mapping First Round -> Update MapRect for overlay
          */
         for overlay in jdrealheatmap.overlays
         {
@@ -89,60 +93,65 @@ class JDHeatMapMissionController:NSObject
             }
         }
         /*
-         1.3  classification The Point
+         1.4  Reduce The Recover Overlay
          */
         func ReduceOverlay()
         {
             var ReduceBool:Bool = false
             repeat
             {
+                print("repeat")
                 ReduceBool = false
                 for overlayX in jdrealheatmap.overlays
                 {
+                    guard let heatoverlayX = overlayX as? JDHeatOverlay
+                    else{
+                        break
+                    }
                     for overlayY  in jdrealheatmap.overlays
                     {
                         if(overlayY.isEqual(overlayX)){continue}
                         let overlayXmaprect = overlayX.boundingMapRect
                         let overlayYmaprect = overlayY.boundingMapRect
-                        
                         if(MKMapRectIntersectsRect(overlayXmaprect, overlayYmaprect))
                         {
                             ReduceBool = true
-                            if let heatoverlayY = overlayY as? JDHeatOverlay,let heatoverlayX = overlayX as? JDHeatOverlay
+                            if let heatoverlayY = overlayY as? JDHeatOverlay
                             {
                                 for point in heatoverlayY.HeatPointsArray
                                 {
                                     heatoverlayX.insertHeatpoint(input: point)
                                 }
                                 heatoverlayX.lauchBuffer()
+                                Overlay_RenderPair[heatoverlayY] = nil
                             }
                             jdrealheatmap.remove(overlayY)
+                            break
                         }
                     }
+                    if(ReduceBool) {break}
                 }
             }while(ReduceBool)
         }
         ReduceOverlay()
         /*
-            1.4 All Point have Been Classified to Overlay
-            1.4.1 Caculate The Region where map should zoom
+            1.5 All Point have Been Classified to Overlay
+            1.5.1 Caculate The Region where map should zoom
         */
         for overlay in jdrealheatmap.overlays
         {
             if let heatoverlay = overlay as? JDHeatOverlay
             {
-                if let heatoverlayRect = (overlay as? JDHeatOverlay)?.boundingMapRect
-                {
-                    let size = heatoverlayRect.size.height * heatoverlayRect.size.width
-                    let biggestize = biggestRegion.size.height * biggestRegion.size.width
-                    biggestRegion = (size > biggestize) ? heatoverlayRect : biggestRegion
-                }
+                let heatoverlayRect = heatoverlay.boundingMapRect
+                let size = heatoverlayRect.size.height * heatoverlayRect.size.width
+                let biggestize = biggestRegion.size.height * biggestRegion.size.width
+                biggestRegion = (size > biggestize) ? heatoverlayRect : biggestRegion
             }
         }
         StartComputRowFormData()
     }
     /**
-     2.0 Overlays Buffer have already pop out
+     2.0 Caculate HeatPoint data to a CGFormat
      **/
     func StartComputRowFormData()
     {

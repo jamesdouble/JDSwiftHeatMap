@@ -45,7 +45,7 @@ class JDRowDataProducer:NSObject
     
     func reduceSize(input:CGSize)->IntSize
     {
-        let byteLimitForAOverlay:CGFloat = 1000000000.0
+        let byteLimitForAOverlay:CGFloat = 5000000000.0
         let caculateByte = input.height * input.width * 4
         if(caculateByte < byteLimitForAOverlay)
         {
@@ -124,19 +124,19 @@ fileprivate struct BytesRGB
 class JDHeatColorMixer:NSObject
 {
     var colorArray:[UIColor]  = [UIColor.yellow,UIColor.blue,UIColor.red]
-    var devideLevel:Int = 12
+    var devideLevel:Int = 6
     
     override init()
     {
         colorArray = []
         for bluetogreen in 0..<devideLevel
         {
-            let color = UIColor(red: 0, green: CGFloat((255/11) * bluetogreen)/255.0, blue: CGFloat(255 - (255/11) * bluetogreen)/255.0, alpha: 1.0)
+            let color = UIColor(red: 0, green: CGFloat((255/(devideLevel-1)) * bluetogreen)/255.0, blue: CGFloat(255 - (255/(devideLevel-1)) * bluetogreen)/255.0, alpha: 1.0)
             colorArray.append(color)
         }
-        for greentoblue in 0..<devideLevel
+        for greentored in 0..<devideLevel
         {
-            let color = UIColor(red: CGFloat((255/11) * greentoblue)/255.0, green:CGFloat(255 - (255/11) * greentoblue)/255.0, blue:0 , alpha: 1.0)
+            let color = UIColor(red: CGFloat((255/(devideLevel-1)) * greentored)/255.0, green:CGFloat(255 - (255/(devideLevel-1)) * greentored)/255.0, blue:0 , alpha: 1.0)
             colorArray.append(color)
         }
     }
@@ -158,7 +158,7 @@ class JDHeatColorMixer:NSObject
             colorArray.append(UIColor.clear)
         }
         
-        var TargetColor:UIColor = UIColor.white
+        var TargetColor:UIColor = colorArray.last!
         let AverageWeight:Float = 1.0 / Float(colorCount)
         var counter:Float = 0.0
         for color in colorArray
