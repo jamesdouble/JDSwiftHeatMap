@@ -17,6 +17,7 @@ class JDHeatMapMissionController:NSObject
     var Overlay_RenderPair:HeatRenderFor = [:]
     var Render_ProducerPair:ProducerFor = [:]
     var jdrealheatmap:JDRealHeatMap!
+    var MaxHeatLevelinWholeMap:Int = 0
     var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
     //
     let missionThread = DispatchQueue(label: "MissionThread")
@@ -46,12 +47,14 @@ class JDHeatMapMissionController:NSObject
         {
             let coor = heatdelegate.heatmap(CoordinateFor: i)
             let heat = heatdelegate.heatmap(HeatLevelFor: i)
+            MaxHeatLevelinWholeMap = (heat > MaxHeatLevelinWholeMap) ? heat : MaxHeatLevelinWholeMap
             let raius = heatdelegate.heatmap(RadiusInKMFor: i)
             let newHeatPoint:JDHeatPoint = JDHeatPoint(heat: heat, coor: coor, heatradius: raius)
             HeatPointsBuffer.append(newHeatPoint)
             /* 
               1.3  classification The Point
              */
+            
             func CluseToOverlay()
             {
                 for overlay in jdrealheatmap.overlays
@@ -69,10 +72,57 @@ class JDHeatMapMissionController:NSObject
                 }
                 //Create New Overlay,OverlayRender會一並被創造
                 let heatoverlay = JDHeatOverlay(first: newHeatPoint)
+                let render = JDHeatOverlayRender(heat: heatoverlay)
+                self.Overlay_RenderPair[heatoverlay] = render
                 jdrealheatmap.add(heatoverlay)
             }
             CluseToOverlay()
         }
+        /*
+         1.3  classification The Point
+         */
+        for overlay in jdrealheatmap.overlays
+        {
+            if let jdheat = overlay as? JDHeatOverlay
+            {
+                jdheat.lauchBuffer()
+            }
+        }
+        /*
+         1.3  classification The Point
+         */
+        func ReduceOverlay()
+        {
+            var ReduceBool:Bool = false
+            repeat
+            {
+                ReduceBool = false
+                for overlayX in jdrealheatmap.overlays
+                {
+                    for overlayY  in jdrealheatmap.overlays
+                    {
+                        if(overlayY.isEqual(overlayX)){continue}
+                        let overlayXmaprect = overlayX.boundingMapRect
+                        let overlayYmaprect = overlayY.boundingMapRect
+                        
+                        if(MKMapRectIntersectsRect(overlayXmaprect, overlayYmaprect))
+                        {
+                            ReduceBool = true
+                            if let heatoverlayY = overlayY as? JDHeatOverlay,let heatoverlayX = overlayX as? JDHeatOverlay
+                            {
+                                for point in heatoverlayY.HeatPointsArray
+                                {
+                                    heatoverlayX.insertHeatpoint(input: point)
+                                }
+                                heatoverlayX.lauchBuffer()
+                            }
+                            jdrealheatmap.remove(overlayY)
+                        }
+                    }
+                }
+            }while(ReduceBool)
+        }
+        ReduceOverlay()
         /*
             1.4 All Point have Been Classified to Overlay
             1.4.1 Caculate The Region where map should zoom
@@ -87,7 +137,6 @@ class JDHeatMapMissionController:NSObject
                     let biggestize = biggestRegion.size.height * biggestRegion.size.width
                     biggestRegion = (size > biggestize) ? heatoverlayRect : biggestRegion
                 }
-                heatoverlay.lauchBuffer()
             }
         }
         StartComputRowFormData()
@@ -108,9 +157,16 @@ class JDHeatMapMissionController:NSObject
                     {
                         if let render = Overlay_RenderPair[heatoverlay]
                         {
-                            let SizeData = render.caculateRowFormData()
-                            let rawdataproducer = JDRowDataProducer(size: (SizeData?.rect.size)!, rowHeatData: (SizeData?.data)!)
-                            Render_ProducerPair[render] = rawdataproducer
+                            if let SizeData = render.caculateRowFormData()
+                            {
+                                let rawdataproducer = JDRowDataProducer(size: (SizeData.rect.size), rowHeatData: (SizeData.data))
+                                Render_ProducerPair[render] = rawdataproducer
+                                rawdataproducer.MaxHeatLevelInWholeMap = MaxHeatLevelinWholeMap
+                            }
+                            else
+                            {
+                                print("Size Error")
+                            }
                         }
                     }
                     NotifyOverlayRender()
@@ -137,6 +193,7 @@ class JDHeatMapMissionController:NSObject
                 {
                     if let render = Overlay_RenderPair[heatoverlay]
                     {
+                        
                         let producer = Render_ProducerPair[render]
                         producer?.produceRowData()
                         render.Bitmapsize = (producer?.cgsize)!

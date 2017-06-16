@@ -44,9 +44,10 @@ extension JDRealHeatMap:MKMapViewDelegate
         print(#function)
         if let jdoverlay = overlay as? JDHeatOverlay
         {
-            let render = JDHeatOverlayRender(heat: jdoverlay)
-            missionController.Overlay_RenderPair[jdoverlay] = render
-            return render
+            if let createdRender:JDHeatOverlayRender = missionController.Overlay_RenderPair[jdoverlay]
+            {
+                return createdRender
+            }
         }
         return MKOverlayRenderer()
     }
@@ -59,8 +60,6 @@ extension JDRealHeatMap:MKMapViewDelegate
         return aview
     }
 }
-
-
 
 public protocol JDHeatMapDelegate {
     func heatmap(HeatPointCount heatmap:JDRealHeatMap) -> Int

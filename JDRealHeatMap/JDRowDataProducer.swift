@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 
 struct RowFormHeatData {
-    var heatInfluence:Float = 0
+    var heatlevel:Float = 0
     var localCGpoint:CGPoint = CGPoint.zero
     var radius:CGFloat = 0
 }
@@ -26,6 +26,7 @@ struct IntSize {
 class JDRowDataProducer:NSObject
 {
     static var theColorMixer:JDHeatColorMixer = JDHeatColorMixer()
+    var MaxHeatLevelInWholeMap:Int = 0
     var RowData:[UTF8Char] = []
     var rowformdatas:[RowFormHeatData] = []
     var cgsize:IntSize!
@@ -44,7 +45,13 @@ class JDRowDataProducer:NSObject
     
     func reduceSize(input:CGSize)->IntSize
     {
-        let scale:CGFloat = 1000
+        let byteLimitForAOverlay:CGFloat = 1000000000.0
+        let caculateByte = input.height * input.width * 4
+        if(caculateByte < byteLimitForAOverlay)
+        {
+            return IntSize(width: Int(input.height), height: Int(input.width))
+        }
+        let scale:CGFloat = caculateByte / byteLimitForAOverlay
         let newWidth = Int(input.width) / Int(scale)
         let newHeight = Int(input.height) / Int(scale)
         
@@ -70,16 +77,27 @@ class JDRowDataProducer:NSObject
             for w in 0..<self.cgsize.width
             {
                 var destiny:Float = 0
+                var involveCount:Int = 0
                 for heatpoint in self.rowformdatas
                 {
                     let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
                     let ratio:Float = 1 - (bytesDistanceToPoint / Float(heatpoint.radius))
                     if(ratio > 0)
                     {
-                        destiny += ratio * heatpoint.heatInfluence
+                        involveCount += 1
+                        destiny += ratio * heatpoint.heatlevel
                     }
                 }
-                let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
+                if(MaxHeatLevelInWholeMap != 0)
+                {
+                    destiny /= Float(MaxHeatLevelInWholeMap)
+                }
+                if(destiny > 1)
+                {
+                    destiny = 1
+                }
+                //let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
+                let rgb = JDRowDataProducer.theColorMixer.getClearify(inDestiny: destiny)
                 let redRow:UTF8Char = rgb.redRow
                 let greenRow:UTF8Char = rgb.greenRow
                 let BlueRow:UTF8Char = rgb.BlueRow
@@ -105,16 +123,81 @@ fileprivate struct BytesRGB
 
 class JDHeatColorMixer:NSObject
 {
-    var colorArray:[UIColor]  = [UIColor.blue,UIColor.red]
+    var colorArray:[UIColor]  = [UIColor.yellow,UIColor.blue,UIColor.red]
+    var devideLevel:Int = 12
     
     override init()
     {
+        colorArray = []
+        for bluetogreen in 0..<devideLevel
+        {
+            let color = UIColor(red: 0, green: CGFloat((255/11) * bluetogreen)/255.0, blue: CGFloat(255 - (255/11) * bluetogreen)/255.0, alpha: 1.0)
+            colorArray.append(color)
+        }
+        for greentoblue in 0..<devideLevel
+        {
+            let color = UIColor(red: CGFloat((255/11) * greentoblue)/255.0, green:CGFloat(255 - (255/11) * greentoblue)/255.0, blue:0 , alpha: 1.0)
+            colorArray.append(color)
+        }
+    }
+    
+    fileprivate func getClearify(inDestiny D:Float)->BytesRGB
+    {
+        if(D == 0)
+        {
+            let rgb:BytesRGB = BytesRGB(redRow: 0,
+                                        greenRow: 0,
+                                        BlueRow: 0,
+                                        alpha: 0)
+            return rgb
+        }
         
+        let colorCount = colorArray.count
+        if(colorCount < 2)
+        {
+            colorArray.append(UIColor.clear)
+        }
+        
+        var TargetColor:UIColor = UIColor.white
+        let AverageWeight:Float = 1.0 / Float(colorCount)
+        var counter:Float = 0.0
+        for color in colorArray
+        {
+            if((counter < D) && D<=(counter + AverageWeight))
+            {
+                TargetColor = color
+                break
+            }
+            else
+            {
+                counter += AverageWeight
+            }
+        }
+        //
+        let rgb = TargetColor.rgb()
+        var redRow:UTF8Char = UTF8Char(Int((rgb?.red)!))
+        var GreenRow:UTF8Char = UTF8Char(Int((rgb?.green)!))
+        var BlueRow:UTF8Char = UTF8Char(Int((rgb?.blue)!))
+    
+        let Crgb:BytesRGB = BytesRGB(redRow: redRow,
+                                    greenRow: GreenRow,
+                                    BlueRow: BlueRow,
+                                    alpha: 255)
+        return Crgb
     }
     
     
     fileprivate func getRGB(inDestiny D:Float)->BytesRGB
     {
+        if(D == 0)
+        {
+            let rgb:BytesRGB = BytesRGB(redRow: 0,
+                                        greenRow: 0,
+                                        BlueRow: 0,
+                                        alpha: 0)
+            return rgb
+        }
+        
         let colorCount = colorArray.count
         if(colorCount < 2)
         {
@@ -138,6 +221,11 @@ class JDHeatColorMixer:NSObject
                 }
                 LDiff = AverageWeight-(counter - D)
             }
+            else if(counter == D)
+            {
+                TargetColor = [color,color]
+                break
+            }
             else
             {
                Index += 1
@@ -159,12 +247,7 @@ class JDHeatColorMixer:NSObject
         var redRow:UTF8Char = UTF8Char(Int(LRed * LDiff + RRed * RDiff))
         var GreenRow:UTF8Char = UTF8Char(Int(LGreen * LDiff + RGreen * RDiff))
         var BlueRow:UTF8Char = UTF8Char(Int(LBlue * LDiff + RBlue * RDiff))
-        if(D < 0.3)
-        {
-            redRow = UTF8Char(Int(redRow / 100))
-            GreenRow = UTF8Char(Int(GreenRow / 100))
-             BlueRow = UTF8Char(Int(BlueRow / 100))
-        }
+        
         
         let rgb:BytesRGB = BytesRGB(redRow: redRow,
                                     greenRow: GreenRow,

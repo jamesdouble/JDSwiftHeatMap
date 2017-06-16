@@ -94,7 +94,6 @@ class JDHeatOverlay:NSObject, MKOverlay
     */
     func lauchBuffer()
     {
-        print(#function)
         for newpoint in NewHeatPointBuffer
         {
             caculateMaprect(newPoint: newpoint)
@@ -111,7 +110,6 @@ class JDHeatOverlay:NSObject, MKOverlay
  */
 class JDHeatOverlayRender:MKOverlayRenderer
 {
-   
     var tempimage:CGImage?
     var CanDraw:Bool = false
     var Bitmapsize:IntSize = IntSize()
@@ -134,15 +132,6 @@ class JDHeatOverlayRender:MKOverlayRenderer
         }
         print(#function + "\(overlay.HeatPointsArray.count)")
         var rowformArr:[RowFormHeatData] = []
-        //Caculate Max heat
-        var maxHeat = overlay.HeatPointsArray[0].HeatLevel
-        for heatpoint in overlay.HeatPointsArray
-        {
-            if(heatpoint.HeatLevel > maxHeat)
-            {
-                maxHeat = heatpoint.HeatLevel
-            }
-        }
         //
         for heatpoint in overlay.HeatPointsArray
         {
@@ -156,7 +145,7 @@ class JDHeatOverlayRender:MKOverlayRenderer
             let radiusmaprect = MKMapRect(origin: MKMapPoint.init(), size: MKMapSize(width: radiusinMKDistanse, height: radiusinMKDistanse))
             let radiusCGDistance = rect(for: radiusmaprect).width
             //
-            let newRow:RowFormHeatData = RowFormHeatData(heatInfluence: Float(heatpoint.HeatLevel) / Float(maxHeat), localCGpoint: loaclCGPoint, radius: radiusCGDistance)
+            let newRow:RowFormHeatData = RowFormHeatData(heatlevel: Float(heatpoint.HeatLevel), localCGpoint: loaclCGPoint, radius: radiusCGDistance)
             rowformArr.append(newRow)
         }
         let cgsize = rect(for: overlay.boundingMapRect)
