@@ -40,7 +40,6 @@ class JDRowDataProducer:NSObject
         self.rowformdatas = rowHeatData
         self.cgsize = reduceSize(input: size)
         RowData = Array.init(repeating: 0, count: 4 * cgsize.width * cgsize.height)
-        produceRowData()
     }
     
     func reduceSize(input:CGSize)->IntSize
@@ -65,41 +64,32 @@ class JDRowDataProducer:NSObject
     func produceRowData()
     {
         print(#function + "w:\(cgsize.width),w:\(cgsize.height)")
-        let bgthread = DispatchQueue(label: "rowdata")
-        bgthread.async {
-            var ByteCount:Int = 0
-            for h in 0..<self.cgsize.height
+        var ByteCount:Int = 0
+        for h in 0..<self.cgsize.height
+        {
+            for w in 0..<self.cgsize.width
             {
-                for w in 0..<self.cgsize.width
+                var destiny:Float = 0
+                for heatpoint in self.rowformdatas
                 {
-                    var destiny:Float = 0
-                    for heatpoint in self.rowformdatas
+                    let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
+                    let ratio:Float = 1 - (bytesDistanceToPoint / Float(heatpoint.radius))
+                    if(ratio > 0)
                     {
-                        let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
-                        let ratio:Float = 1 - (bytesDistanceToPoint / Float(heatpoint.radius))
-                        if(ratio > 0)
-                        {
-                            destiny += ratio * heatpoint.heatInfluence
-                        }
-                        else
-                        {
-                            destiny += 0
-                        }
+                        destiny += ratio * heatpoint.heatInfluence
                     }
-                    let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
-                    
-                    let redRow:UTF8Char = rgb.redRow
-                    let greenRow:UTF8Char = rgb.greenRow
-                    let BlueRow:UTF8Char = rgb.BlueRow
-                    let alpha:UTF8Char = UTF8Char(Int(destiny * 255))
-                    self.RowData[ByteCount] = redRow
-                    self.RowData[ByteCount+1] = greenRow
-                    self.RowData[ByteCount+2] = BlueRow
-                    self.RowData[ByteCount+3] = alpha
-                    ByteCount += 4
                 }
+                let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
+                let redRow:UTF8Char = rgb.redRow
+                let greenRow:UTF8Char = rgb.greenRow
+                let BlueRow:UTF8Char = rgb.BlueRow
+                let alpha:UTF8Char = UTF8Char(Int(destiny * 255))
+                self.RowData[ByteCount] = redRow
+                self.RowData[ByteCount+1] = greenRow
+                self.RowData[ByteCount+2] = BlueRow
+                self.RowData[ByteCount+3] = alpha
+                ByteCount += 4
             }
-            
         }
     }
 }
@@ -115,8 +105,7 @@ fileprivate struct BytesRGB
 
 class JDHeatColorMixer:NSObject
 {
-    var colorArray:[UIColor]  = [UIColor.red,UIColor.yellow,UIColor.blue].reversed()
-    
+    var colorArray:[UIColor]  = [UIColor.blue,UIColor.red]
     
     override init()
     {
@@ -131,6 +120,7 @@ class JDHeatColorMixer:NSObject
         {
             colorArray.append(UIColor.clear)
         }
+        
         var TargetColor:[UIColor] = []
         let AverageWeight:Float = 1.0 / Float(colorCount-1)
         var counter:Float = 0.0
@@ -154,6 +144,7 @@ class JDHeatColorMixer:NSObject
               
             }
         }
+        LDiff = 1.0 - LDiff
         let RDiff:Float = 1.0 - LDiff
         //
         let LCGColor = TargetColor[0].rgb()
@@ -165,9 +156,15 @@ class JDHeatColorMixer:NSObject
         let RGreen:Float = (RCGColor?.green)!
         let RBlue:Float = (RCGColor?.blue)!
         //
-        let redRow:UTF8Char = UTF8Char(Int(LRed * LDiff + RRed * RDiff))
-        let GreenRow:UTF8Char = UTF8Char(Int(LGreen * LDiff + RGreen * RDiff))
-        let BlueRow:UTF8Char = UTF8Char(Int(LBlue * LDiff + RBlue * RDiff))
+        var redRow:UTF8Char = UTF8Char(Int(LRed * LDiff + RRed * RDiff))
+        var GreenRow:UTF8Char = UTF8Char(Int(LGreen * LDiff + RGreen * RDiff))
+        var BlueRow:UTF8Char = UTF8Char(Int(LBlue * LDiff + RBlue * RDiff))
+        if(D < 0.3)
+        {
+            redRow = UTF8Char(Int(redRow / 100))
+            GreenRow = UTF8Char(Int(GreenRow / 100))
+             BlueRow = UTF8Char(Int(BlueRow / 100))
+        }
         
         let rgb:BytesRGB = BytesRGB(redRow: redRow,
                                     greenRow: GreenRow,

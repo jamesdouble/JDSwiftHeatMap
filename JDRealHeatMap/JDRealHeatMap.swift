@@ -12,12 +12,13 @@ import MapKit
 public class JDRealHeatMap:MKMapView
 {
     var heatmapdelegate: JDHeatMapDelegate?
-    
+    var missionController:JDHeatMapMissionController!
     public init(frame: CGRect,delegate d:JDHeatMapDelegate) {
         super.init(frame: frame)
         self.showsScale = true
         self.delegate = self
         self.heatmapdelegate = d
+        missionController = JDHeatMapMissionController(JDRealHeatMap: self)
         refresh()
     }
     
@@ -27,76 +28,12 @@ public class JDRealHeatMap:MKMapView
     
     public func refresh()
     {
-        var HeatPointsBuffer:[JDHeatPoint] = []
-        self.removeOverlays(overlays)
-        /*
-            Call the Delegate
-        */
-        guard let heatdelegate = heatmapdelegate else {
-            return
-        }
-        let datacount = heatdelegate.heatmap(HeatPointCount: self)
-        
-        for i in 0..<datacount
-        {
-            let coor = heatdelegate.heatmap(CoordinateFor: i)
-            let heat = heatdelegate.heatmap(HeatLevelFor: i)
-            let raius = heatdelegate.heatmap(RadiusInKMFor: i)
-            let newHeatPoint:JDHeatPoint = JDHeatPoint(heat: heat, coor: coor, heatradius: raius)
-            HeatPointsBuffer.append(newHeatPoint)
-        }
-        //
-        func CluseOverlay()
-        {
-            for heatpoint in HeatPointsBuffer
-            {
-                var breakbool:Bool = false
-                for overlay in overlays
-                {
-                    let overlaymaprect = overlay.boundingMapRect
-                    //Cluse in Old Overlay
-                    if(MKMapRectIntersectsRect(overlaymaprect, heatpoint.MapRect))
-                    {
-                        if let heatoverlay = overlay as? JDHeatOverlay
-                        {
-                            heatoverlay.insertHeatpoint(input: heatpoint)
-                            breakbool = true
-                            break
-                        }
-                    }
-                }
-                if(breakbool) {continue}
-                //Create New Overlay,OverlayRender會一並被創造
-                let heatoverlay = JDHeatOverlay(first: heatpoint)
-                self.add(heatoverlay)
-            }
-        }
-        CluseOverlay()
-        //
-        for overlay in overlays
-        {
-            if let heatoverlay = overlay as? JDHeatOverlay
-            {
-                heatoverlay.lauchBuffer()
-            }
-        }
-        //
-        func reZoomRegion()
-        {
-            var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
-            for overlay in overlays
-            {
-                if let heatoverlayRect = (overlay as? JDHeatOverlay)?.boundingMapRect
-                {
-                    let size = heatoverlayRect.size.height * heatoverlayRect.size.width
-                    let biggestize = biggestRegion.size.height * biggestRegion.size.width
-                    biggestRegion = (size > biggestize) ? heatoverlayRect : biggestRegion
-                }
-            }
-            self.setRegion(MKCoordinateRegionForMapRect(biggestRegion), animated: true)
-        }
-        reZoomRegion()
-        self.setNeedsDisplay()
+        missionController.ExecuteRefreshMission()
+    }
+    
+    func reZoomRegion(biggestRegion:MKMapRect)
+    {
+        self.setRegion(MKCoordinateRegionForMapRect(biggestRegion), animated: true)
     }
 }
 
@@ -108,6 +45,7 @@ extension JDRealHeatMap:MKMapViewDelegate
         if let jdoverlay = overlay as? JDHeatOverlay
         {
             let render = JDHeatOverlayRender(heat: jdoverlay)
+            missionController.Overlay_RenderPair[jdoverlay] = render
             return render
         }
         return MKOverlayRenderer()

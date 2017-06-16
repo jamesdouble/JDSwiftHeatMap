@@ -18,12 +18,7 @@ class JDHeatOverlay:NSObject, MKOverlay
     var HeatPointsArray:[JDHeatPoint] = []
     var NewHeatPointBuffer:[JDHeatPoint] = []
     var CaculatedMapRect:MKMapRect?
-    /* 
-        Set to true when a new heatPoint Insert
-        Tell the overlay render to recaculate the row data.
-    */
-    var HeatPointNeedupdate:Bool = false
-    
+
     var coordinate: CLLocationCoordinate2D
     {
         return HeatPointsArray[0].coordinate
@@ -106,7 +101,6 @@ class JDHeatOverlay:NSObject, MKOverlay
             HeatPointsArray.append(newpoint)
         }
         NewHeatPointBuffer = []
-        HeatPointNeedupdate = true
     }
     
 }
@@ -117,12 +111,12 @@ class JDHeatOverlay:NSObject, MKOverlay
  */
 class JDHeatOverlayRender:MKOverlayRenderer
 {
-    /*
-        RowData計算器
-     */
-    var rawdataproducer:JDRowDataProducer?
-    
+   
     var tempimage:CGImage?
+    var CanDraw:Bool = false
+    var Bitmapsize:IntSize = IntSize()
+    var dataReference:[UTF8Char]?
+    var BytesPerRow:Int = 0
     
     var transferCGRect:CGRect{
         return rect(for: overlay.boundingMapRect)
@@ -131,14 +125,12 @@ class JDHeatOverlayRender:MKOverlayRenderer
     init(heat overlay: JDHeatOverlay) {
         super.init(overlay: overlay)
         self.alpha = 0.7
-        //
-        caculateRowFormData()
     }
     
-    func caculateRowFormData()
+    func caculateRowFormData()->(data:[RowFormHeatData],rect:CGRect)?
     {
         guard let overlay = overlay as? JDHeatOverlay else {
-            return
+            return nil
         }
         print(#function + "\(overlay.HeatPointsArray.count)")
         var rowformArr:[RowFormHeatData] = []
@@ -168,23 +160,25 @@ class JDHeatOverlayRender:MKOverlayRenderer
             rowformArr.append(newRow)
         }
         let cgsize = rect(for: overlay.boundingMapRect)
-        rawdataproducer = JDRowDataProducer(size: cgsize.size, rowHeatData: rowformArr)
+        return (rect:cgsize,data:rowformArr)
     }
     
     /**
      drawMapRect is the real meat of this class; it defines how MapKit should render this view when given a specific MKMapRect, MKZoomScale, and the CGContextRef
      */
     
+    override func canDraw(_ mapRect: MKMapRect, zoomScale: MKZoomScale) -> Bool {
+        return CanDraw
+    }
+    
     
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
-        
-        guard let overlay = overlay as? JDHeatOverlay else {
+        if(!CanDraw)
+        {
             return
         }
-        if(overlay.HeatPointNeedupdate)
-        {
-            overlay.HeatPointNeedupdate = false
-            caculateRowFormData()
+        guard let overlay = overlay as? JDHeatOverlay else {
+            return
         }
         context.saveGState()
         func getGrediantContextImage()->CGImage?
@@ -192,19 +186,16 @@ class JDHeatOverlayRender:MKOverlayRenderer
             //More Detail
             func CreateContextOldWay()->CGImage?
             {
-                guard let producer = rawdataproducer else {
-                    return nil
-                }
-                
-                let tempBuffer = malloc(producer.cgsize.width * producer.cgsize.height * 4)
-                memcpy(tempBuffer, &self.rawdataproducer!.RowData, producer.BytesPerRow * producer.cgsize.height)
+               
+               let tempBuffer = malloc(Bitmapsize.width * Bitmapsize.height * 4)
+                memcpy(tempBuffer, &dataReference!, BytesPerRow * Bitmapsize.height)
                 defer {
                     free(tempBuffer)
                 }
                 
                 let rgbColorSpace:CGColorSpace = CGColorSpaceCreateDeviceRGB()
                 let alphabitmapinfo = CGImageAlphaInfo.premultipliedLast.rawValue
-                if let contextlayer:CGContext = CGContext(data: tempBuffer, width: producer.cgsize.width, height: producer.cgsize.height, bitsPerComponent: 8, bytesPerRow: producer.BytesPerRow, space: rgbColorSpace, bitmapInfo: alphabitmapinfo)
+                if let contextlayer:CGContext = CGContext(data: tempBuffer, width: Bitmapsize.width, height: Bitmapsize.height, bitsPerComponent: 8, bytesPerRow: BytesPerRow, space: rgbColorSpace, bitmapInfo: alphabitmapinfo)
                 {
                     return contextlayer.makeImage()
                 }
@@ -218,9 +209,11 @@ class JDHeatOverlayRender:MKOverlayRenderer
             }
             return nil
         }
-        tempimage = getGrediantContextImage()
-        let mapCGRect = transferCGRect
-        context.draw(tempimage!, in: mapCGRect)
+        if let tempimage = getGrediantContextImage()
+        {
+            let mapCGRect = transferCGRect
+            context.draw(tempimage, in: mapCGRect)
+        }
     }
     
 }
