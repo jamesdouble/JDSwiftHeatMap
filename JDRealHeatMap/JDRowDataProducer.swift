@@ -25,56 +25,60 @@ struct IntSize {
  **/
 class JDRowDataProducer:NSObject
 {
+    /*
+        These two variable should not be modified after
+    */
+    var Originrowformdatas:[RowFormHeatData] = []
+    var OriginSize:CGSize = CGSize.zero
+    //
     static var theColorMixer:JDHeatColorMixer = JDHeatColorMixer()
     var MaxHeatLevelInWholeMap:Int = 0
     var RowData:[UTF8Char] = []
     var rowformdatas:[RowFormHeatData] = []
-    var cgsize:IntSize!
+    var FitnessIntSize:IntSize!
     var BytesPerRow:Int
     {
-        return 4 * cgsize.width
+        return 4 * FitnessIntSize.width
     }
+    
     
     init(size:CGSize,rowHeatData:[RowFormHeatData])
     {
         super.init()
-        self.rowformdatas = rowHeatData
-        self.cgsize = reduceSize(input: size)
-        RowData = Array.init(repeating: 0, count: 4 * cgsize.width * cgsize.height)
+        self.Originrowformdatas = rowHeatData
+        self.OriginSize = size
     }
-    
-    func reduceSize(input:CGSize)->IntSize
+    /**
+        Sould not Miss this or the image size will up to GB
+        (All beacuse MKMapRect Has a high definetion)
+     **/
+    func reduceSize(scales:Double)
     {
-        let byteLimitForAOverlay:CGFloat = 5000000000.0
-        let caculateByte = input.height * input.width * 4
-        if(caculateByte < byteLimitForAOverlay)
-        {
-            return IntSize(width: Int(input.height), height: Int(input.width))
-        }
-        let scale:CGFloat = caculateByte / byteLimitForAOverlay
-        let newWidth = Int(input.width) / Int(scale)
-        let newHeight = Int(input.height) / Int(scale)
-        
+        let scale:CGFloat = CGFloat(scales) * 1.5
+        let newWidth = Int(OriginSize.width * scale)
+        let newHeight = Int(OriginSize.height * scale)
+        rowformdatas = Originrowformdatas
         func reduceRowData()
         {
-            for i in 0..<rowformdatas.count
+            for i in 0..<Originrowformdatas.count
             {
-                rowformdatas[i].localCGpoint.x /= scale
-                rowformdatas[i].localCGpoint.y /= scale
-                rowformdatas[i].radius /= scale
+                rowformdatas[i].localCGpoint.x *= scale
+                rowformdatas[i].localCGpoint.y *= scale
+                rowformdatas[i].radius *= scale
             }
         }
         reduceRowData()
-        return IntSize(width: newWidth, height: newHeight)
+        self.FitnessIntSize = IntSize(width: newWidth, height: newHeight)
+        RowData = Array.init(repeating: 0, count: 4 * FitnessIntSize.width * FitnessIntSize.height)
     }
     
     func produceRowData()
     {
-        print(#function + "w:\(cgsize.width),w:\(cgsize.height)")
+        print(#function + "w:\(FitnessIntSize.width),w:\(FitnessIntSize.height)")
         var ByteCount:Int = 0
-        for h in 0..<self.cgsize.height
+        for h in 0..<self.FitnessIntSize.height
         {
-            for w in 0..<self.cgsize.width
+            for w in 0..<self.FitnessIntSize.width
             {
                 var destiny:Float = 0
                 var involveCount:Int = 0
@@ -109,6 +113,7 @@ class JDRowDataProducer:NSObject
                 ByteCount += 4
             }
         }
+        
     }
 }
 
@@ -163,14 +168,20 @@ class JDHeatColorMixer:NSObject
         var counter:Float = 0.0
         for color in colorArray
         {
-            if((counter < D) && D<=(counter + AverageWeight))
+            let next = counter + AverageWeight
+            if((counter < D) && D<next)
             {
                 TargetColor = color
                 break
             }
+            else if(D == next)
+            {
+                TargetColor = UIColor.brown
+                break
+            }
             else
             {
-                counter += AverageWeight
+                counter = next
             }
         }
         //

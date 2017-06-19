@@ -9,17 +9,37 @@
 import Foundation
 import MapKit
 
+public enum DataPointType
+{
+    case DotPoint
+    case RadiusPoint
+}
+
+public enum ColorMixerMode
+{
+    case BlurryMode
+    case DistinctMode
+}
+
 public class JDRealHeatMap:MKMapView
 {
     var heatmapdelegate: JDHeatMapDelegate?
     var missionController:JDHeatMapMissionController!
-    public init(frame: CGRect,delegate d:JDHeatMapDelegate) {
+    var indicator:UIActivityIndicatorView?
+    
+    /**
+    
+     
+     
+    */
+    public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .DotPoint,mixermode mode:ColorMixerMode = .DistinctMode) {
         super.init(frame: frame)
         self.showsScale = true
         self.delegate = self
         self.heatmapdelegate = d
-        missionController = JDHeatMapMissionController(JDRealHeatMap: self)
+        missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: type,mode: mode)
         refresh()
+        InitIndicator()
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -34,6 +54,21 @@ public class JDRealHeatMap:MKMapView
     func reZoomRegion(biggestRegion:MKMapRect)
     {
         self.setRegion(MKCoordinateRegionForMapRect(biggestRegion), animated: true)
+    }
+    
+    func InitIndicator()
+    {
+        indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        indicator?.translatesAutoresizingMaskIntoConstraints = false
+        self.addSubview(indicator!)
+        let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 50)
+        let sizeHeight = NSLayoutConstraint(item: indicator!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 50)
+        let rightCon = NSLayoutConstraint(item: indicator!, attribute: .trailing, relatedBy: .equal, toItem: self, attribute: .trailing, multiplier: 1.0, constant: 0)
+        let BottomCon = NSLayoutConstraint(item: indicator!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0)
+        indicator?.addConstraints([sizeWidth,sizeHeight])
+        self.addConstraints([rightCon,BottomCon])
+        self.updateConstraints()
+        indicator?.startAnimating()
     }
 }
 
@@ -51,13 +86,17 @@ extension JDRealHeatMap:MKMapViewDelegate
         return MKOverlayRenderer()
     }
     
-    public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView?
-    {
-        let aview = MKAnnotationView(annotation: annotation, reuseIdentifier: nil)
-        aview.backgroundColor = UIColor.white
-        aview.frame.size = CGSize(width: 100, height:100)
-        return aview
+    public func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
+        print(#function)
+        missionController.mapViewWillStartRenderingMap()
     }
+    
+   
+    public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool)
+    {
+        
+    }
+    
 }
 
 public protocol JDHeatMapDelegate {
@@ -74,6 +113,8 @@ extension JDHeatMapDelegate
         return 100
     }
 }
+
+
 
 struct JDHeatPoint
 {

@@ -32,8 +32,8 @@ class ViewController: UIViewController {
     {
         for i in 0..<20
         {
-            let loti:Double = Double(120 + arc4random_uniform(2)) + Double(Float(arc4random()) / Float(UINT32_MAX))
-            let lati:Double = Double(20 + arc4random_uniform(2)) + Double(Float(arc4random()) / Float(UINT32_MAX))
+            let loti:Double = Double(119) + Double(Float(arc4random()) / Float(UINT32_MAX))
+            let lati:Double = Double(20 + arc4random_uniform(2)) + 2 * Double(Float(arc4random()) / Float(UINT32_MAX))
             testpointCoor.append(CLLocationCoordinate2D(latitude: lati, longitude: loti))
         }
     }

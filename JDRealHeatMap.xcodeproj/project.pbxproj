@@ -16,6 +16,7 @@
 		4FB1697C1EF1723A000255D5 /* JDOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB1697B1EF1723A000255D5 /* JDOverlay.swift */; };
 		4FB1697E1EF1942E000255D5 /* JDRowDataProducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB1697D1EF1942E000255D5 /* JDRowDataProducer.swift */; };
 		4FB169801EF38994000255D5 /* JDHMMissionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB1697F1EF38994000255D5 /* JDHMMissionController.swift */; };
+		4FEE8C6B1EF8011F0094BD2B /* JDOverlayRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FEE8C6A1EF8011F0094BD2B /* JDOverlayRender.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		4FB1697B1EF1723A000255D5 /* JDOverlay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JDOverlay.swift; sourceTree = "<group>"; };
 		4FB1697D1EF1942E000255D5 /* JDRowDataProducer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JDRowDataProducer.swift; sourceTree = "<group>"; };
 		4FB1697F1EF38994000255D5 /* JDHMMissionController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JDHMMissionController.swift; sourceTree = "<group>"; };
+		4FEE8C6A1EF8011F0094BD2B /* JDOverlayRender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JDOverlayRender.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +82,7 @@
 				4FB1697B1EF1723A000255D5 /* JDOverlay.swift */,
 				4FB1697D1EF1942E000255D5 /* JDRowDataProducer.swift */,
 				4FB1697F1EF38994000255D5 /* JDHMMissionController.swift */,
+				4FEE8C6A1EF8011F0094BD2B /* JDOverlayRender.swift */,
 			);
 			name = JDRealHeatMap;
 			sourceTree = "<group>";
@@ -163,6 +166,7 @@
 				4F90C0ED1EEE6A39003706F3 /* ViewController.swift in Sources */,
 				4FB1697C1EF1723A000255D5 /* JDOverlay.swift in Sources */,
 				4F90C0EB1EEE6A39003706F3 /* AppDelegate.swift in Sources */,
+				4FEE8C6B1EF8011F0094BD2B /* JDOverlayRender.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

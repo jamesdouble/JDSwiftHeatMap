@@ -16,9 +16,9 @@ import MapKit
 class JDHeatOverlay:NSObject, MKOverlay
 {
     var HeatPointsArray:[JDHeatPoint] = []
-    var NewHeatPointBuffer:[JDHeatPoint] = []
     var CaculatedMapRect:MKMapRect?
-    var TestingID:Int = 0
+    var EstimatedScale:Double = 0.0
+    
     var coordinate: CLLocationCoordinate2D
     {
         return HeatPointsArray[0].coordinate
@@ -33,11 +33,28 @@ class JDHeatOverlay:NSObject, MKOverlay
         }
         return BeenCaculatedMapRect
     }
-    /**
-        有新的點加進來 ->
-        重新計算這個Overlay的涵蓋
-     */
+    
+    init(first Heatpoint:JDHeatPoint)
+    {
+        super.init()
+        caculateMaprect(newPoint: Heatpoint)
+        HeatPointsArray.append(Heatpoint)
+    }
+    
     func caculateMaprect(newPoint:JDHeatPoint)
+    {
+        
+    }
+}
+
+class JDHeatRadiusPointOverlay:JDHeatOverlay
+{
+    var NewHeatPointBuffer:[JDHeatPoint] = []
+    /**
+     有新的點加進來 ->
+     重新計算這個Overlay的涵蓋
+     */
+    override func caculateMaprect(newPoint:JDHeatPoint)
     {
         var MaxX:Double = 0
         var MaxY:Double = 0
@@ -73,24 +90,19 @@ class JDHeatOverlay:NSObject, MKOverlay
         let rect = MKMapRectMake(MinX, MinY, MaxX - MinX, MaxY - MinY)
         CaculatedMapRect = rect
     }
-
-    init(first Heatpoint:JDHeatPoint)
-    {
-        super.init()
-        caculateMaprect(newPoint: Heatpoint)
-        HeatPointsArray.append(Heatpoint)
-    }
+    
     /**
-        新的點進來先放在Buffer裡，等CluseOverlay結束一並計算
-    */
+     新的點進來先放在Buffer裡，等CluseOverlay結束一並計算
+     */
     func insertHeatpoint(input:JDHeatPoint)
     {
         NewHeatPointBuffer.append(input)
     }
+    
     /**
-        一個Refresh，執行一次，
-        這樣不用讓Render裡的caculateRowFormData執行多次
-    */
+     一個Refresh，執行一次，
+     這樣不用讓Render裡的caculateRowFormData執行多次
+     */
     func lauchBuffer()
     {
         for newpoint in NewHeatPointBuffer
@@ -100,109 +112,16 @@ class JDHeatOverlay:NSObject, MKOverlay
         }
         NewHeatPointBuffer = []
     }
-    
 }
 
-/**
-    這個類別只需要知道畫圖相關的，不用記住任何點Data
-    只要交給Producer製造還給他一個RowData
- */
-class JDHeatOverlayRender:MKOverlayRenderer
+class JDHeatDotPointOverlay:JDHeatOverlay
 {
-    var tempimage:CGImage?
-    var CanDraw:Bool = false
-    var Bitmapsize:IntSize = IntSize()
-    var dataReference:[UTF8Char]?
-    var BytesPerRow:Int = 0
-    
-    var transferCGRect:CGRect{
-        return rect(for: overlay.boundingMapRect)
-    }
-    
-    init(heat overlay: JDHeatOverlay) {
-        super.init(overlay: overlay)
-        self.alpha = 0.7
-    }
-    
-    func caculateRowFormData()->(data:[RowFormHeatData],rect:CGRect)?
-    {
-        guard let overlay = overlay as? JDHeatOverlay else {
-            return nil
-        }
-        print(#function + "\(overlay.HeatPointsArray.count)")
-        var rowformArr:[RowFormHeatData] = []
-        //
-        for heatpoint in overlay.HeatPointsArray
-        {
-            let mkmappoint = MKMapPointForCoordinate(heatpoint.coordinate)
-            let GlobalCGpoint:CGPoint = self.point(for: mkmappoint)
-            let localX = GlobalCGpoint.x - (transferCGRect.origin.x)
-            let localY = GlobalCGpoint.y - (transferCGRect.origin.y)
-            let loaclCGPoint = CGPoint(x: localX, y: localY)
-            //
-            let radiusinMKDistanse:Double = heatpoint.radiusInMKDistance
-            let radiusmaprect = MKMapRect(origin: MKMapPoint.init(), size: MKMapSize(width: radiusinMKDistanse, height: radiusinMKDistanse))
-            let radiusCGDistance = rect(for: radiusmaprect).width
-            //
-            let newRow:RowFormHeatData = RowFormHeatData(heatlevel: Float(heatpoint.HeatLevel), localCGpoint: loaclCGPoint, radius: radiusCGDistance)
-            rowformArr.append(newRow)
-        }
-        let cgsize = rect(for: overlay.boundingMapRect)
-        return (rect:cgsize,data:rowformArr)
-    }
-    
     /**
-     drawMapRect is the real meat of this class; it defines how MapKit should render this view when given a specific MKMapRect, MKZoomScale, and the CGContextRef
+     有新的點加進來 ->
+     重新計算這個Overlay的涵蓋
      */
-    
-    override func canDraw(_ mapRect: MKMapRect, zoomScale: MKZoomScale) -> Bool {
-        return CanDraw
+    override func caculateMaprect(newPoint:JDHeatPoint)
+    {
+        
     }
-    
-    
-    override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
-        if(!CanDraw)
-        {
-            return
-        }
-        guard let overlay = overlay as? JDHeatOverlay else {
-            return
-        }
-        context.saveGState()
-        func getGrediantContextImage()->CGImage?
-        {
-            //More Detail
-            func CreateContextOldWay()->CGImage?
-            {
-               
-               let tempBuffer = malloc(Bitmapsize.width * Bitmapsize.height * 4)
-                memcpy(tempBuffer, &dataReference!, BytesPerRow * Bitmapsize.height)
-                defer {
-                    free(tempBuffer)
-                }
-                
-                let rgbColorSpace:CGColorSpace = CGColorSpaceCreateDeviceRGB()
-                let alphabitmapinfo = CGImageAlphaInfo.premultipliedLast.rawValue
-                if let contextlayer:CGContext = CGContext(data: tempBuffer, width: Bitmapsize.width, height: Bitmapsize.height, bitsPerComponent: 8, bytesPerRow: BytesPerRow, space: rgbColorSpace, bitmapInfo: alphabitmapinfo)
-                {
-                    return contextlayer.makeImage()
-                }
-                print("alpha fail")
-                return nil
-            }
-            if let oldWayCGimage = CreateContextOldWay()
-            {
-                UIGraphicsPopContext()
-                return oldWayCGimage
-            }
-            return nil
-        }
-        if let tempimage = getGrediantContextImage()
-        {
-            let mapCGRect = transferCGRect
-            context.draw(tempimage, in: mapCGRect)
-        }
-    }
-    
 }
-
