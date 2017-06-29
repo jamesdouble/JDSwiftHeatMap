@@ -80,9 +80,9 @@
 			children = (
 				4F90C0FC1EEE6C64003706F3 /* JDRealHeatMap.swift */,
 				4FB1697B1EF1723A000255D5 /* JDOverlay.swift */,
+				4FEE8C6A1EF8011F0094BD2B /* JDOverlayRender.swift */,
 				4FB1697D1EF1942E000255D5 /* JDRowDataProducer.swift */,
 				4FB1697F1EF38994000255D5 /* JDHMMissionController.swift */,
-				4FEE8C6A1EF8011F0094BD2B /* JDOverlayRender.swift */,
 			);
 			name = JDRealHeatMap;
 			sourceTree = "<group>";

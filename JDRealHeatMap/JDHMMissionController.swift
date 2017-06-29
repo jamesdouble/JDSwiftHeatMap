@@ -17,7 +17,6 @@ class JDHeatMapMissionController:NSObject
     var Overlay_RenderPair:HeatRenderFor = [:]
     var Render_ProducerPair:ProducerFor = [:]
     var jdrealheatmap:JDRealHeatMap!
-    var EstimateSizeInUIView:CGSize = CGSize.zero
     var Caculating:Bool = false
     var Datatype:DataPointType = .DotPoint
     var Mixertype:ColorMixerMode = .DistinctMode
@@ -40,6 +39,8 @@ class JDHeatMapMissionController:NSObject
     **/
     func ExecuteRefreshMission()
     {
+        Overlay_RenderPair = [:]
+        Render_ProducerPair = [:]
         /*
            1.1 Call the Delegate
          */
@@ -49,6 +50,7 @@ class JDHeatMapMissionController:NSObject
         /*
            1.2 Collect New Data
         */
+        jdrealheatmap.removeOverlays(jdrealheatmap.overlays)
         let datacount = heatdelegate.heatmap(HeatPointCount: jdrealheatmap)
         var id:Int = 1
         for i in 0..<datacount
@@ -58,59 +60,63 @@ class JDHeatMapMissionController:NSObject
             MaxHeatLevelinWholeMap = (heat > MaxHeatLevelinWholeMap) ? heat : MaxHeatLevelinWholeMap
             let raius = heatdelegate.heatmap(RadiusInKMFor: i)
             let newHeatPoint:JDHeatPoint = JDHeatPoint(heat: heat, coor: coor, heatradius: raius)
-            /* 
-              1.3-1 type = Radius point  classification The Point
-             */
-            func CluseToOverlay()
-            {
-                for overlay in jdrealheatmap.overlays
-                {
-                    let overlaymaprect = overlay.boundingMapRect
-                    //Cluse in Old Overlay
-                    if(MKMapRectIntersectsRect(overlaymaprect, newHeatPoint.MapRect))
-                    {
-                        if let heatoverlay = overlay as? JDHeatRadiusPointOverlay
-                        {
-                            heatoverlay.insertHeatpoint(input: newHeatPoint)
-                            return
-                        }
-                    }
-                }
-                //Create New Overlay,OverlayRender會一起創造
-                let heatoverlay = JDHeatRadiusPointOverlay(first: newHeatPoint)
-                let render = JDHeatOverlayRender(heat: heatoverlay)
-                self.Overlay_RenderPair[heatoverlay] = render
-                jdrealheatmap.add(heatoverlay)
-            }
-            /*
-             1.3-1 type = Radius point  classification The Point
-             */
-            func collectToOneOverlay()
-            {
-                
-            }
-            
             if(Datatype == .DotPoint)
             {
+                /*
+                 1.3-1 type = Dot point  there will Only be one overlay
+                 */
+                func collectToOneOverlay()
+                {
+                    if(jdrealheatmap.overlays.count == 1)
+                    {
+                        if let dotoverlay = jdrealheatmap.overlays[0] as? JDHeatDotPointOverlay
+                        {
+                            dotoverlay.insertHeatpoint(input: newHeatPoint)
+                        }
+                        return
+                    }
+                    else if(jdrealheatmap.overlays.count == 0)
+                    {
+                        let BigOverlay = JDHeatDotPointOverlay(first: newHeatPoint)
+                        let onlyRender = JDDotPointOverlayRender(heat: BigOverlay)
+                        self.Overlay_RenderPair[BigOverlay] = onlyRender
+                        jdrealheatmap.add(BigOverlay)
+                        return
+                    }
+                }
                 collectToOneOverlay()
             }
             else if(Datatype == .RadiusPoint)
             {
+                /*
+                 1.3-1 type = Radius point  classification The Point
+                 */
+                func CluseToOverlay()
+                {
+                    for overlay in jdrealheatmap.overlays
+                    {
+                        let overlaymaprect = overlay.boundingMapRect
+                        //Cluse in Old Overlay
+                        if(MKMapRectIntersectsRect(overlaymaprect, newHeatPoint.MapRect))
+                        {
+                            if let heatoverlay = overlay as? JDHeatRadiusPointOverlay
+                            {
+                                heatoverlay.insertHeatpoint(input: newHeatPoint)
+                                return
+                            }
+                        }
+                    }
+                    //Create New Overlay,OverlayRender會一起創造
+                    let heatoverlay = JDHeatRadiusPointOverlay(first: newHeatPoint)
+                    let render = JDRadiusPointOverlayRender(heat: heatoverlay)
+                    self.Overlay_RenderPair[heatoverlay] = render
+                    jdrealheatmap.add(heatoverlay)
+                }
                 CluseToOverlay()
             }
         }
         /*
-         1.3.2 Mapping First Round -> Update MapRect for overlay
-         */
-        for overlay in jdrealheatmap.overlays
-        {
-            if let jdheat = overlay as? JDHeatRadiusPointOverlay
-            {
-                jdheat.lauchBuffer()
-            }
-        }
-        /*
-         1.4  Reduce The Recover Overlay
+         1.3.3  Reduce The Recover Overlay
          */
         func ReduceOverlay()
         {
@@ -121,8 +127,8 @@ class JDHeatMapMissionController:NSObject
                 for overlayX in jdrealheatmap.overlays
                 {
                     guard let heatoverlayX = overlayX as? JDHeatRadiusPointOverlay
-                    else{
-                        break
+                        else{
+                            break
                     }
                     for overlayY  in jdrealheatmap.overlays
                     {
@@ -138,7 +144,6 @@ class JDHeatMapMissionController:NSObject
                                 {
                                     heatoverlayX.insertHeatpoint(input: point)
                                 }
-                                heatoverlayX.lauchBuffer()
                                 Overlay_RenderPair[heatoverlayY] = nil
                             }
                             jdrealheatmap.remove(overlayY)
@@ -151,8 +156,8 @@ class JDHeatMapMissionController:NSObject
         }
         ReduceOverlay()
         /*
-            1.5 All Point have Been Classified to Overlay
-            1.5.1 Caculate The Region where map should zoom
+            1.4 All Point have Been Classified to Overlay
+            1.4.1 Caculate The Region where map should zoom later
         */
         for overlay in jdrealheatmap.overlays
         {
@@ -176,32 +181,54 @@ class JDHeatMapMissionController:NSObject
         LastVisibleMapRect = jdrealheatmap.visibleMapRect
         func computing()
         {
-            for overlay in jdrealheatmap.overlays
+            func OverlayRender(heatoverlay:JDHeatOverlay)
             {
-                if let heatoverlay = overlay as? JDHeatOverlay
+                if let render = Overlay_RenderPair[heatoverlay]
                 {
-                    func NotifyOverlayRender()
+                    if let CaculatedRowFormData = render.caculateRowFormData()
                     {
-                        if let render = Overlay_RenderPair[heatoverlay]
+                        var rawdataproducer:JDRowDataProducer!
+                        let OverlayCGRect = CaculatedRowFormData.rect
+                        let LocalFormData = CaculatedRowFormData.data
+                        if(Datatype == .RadiusPoint)
                         {
-                            if let SizeData = render.caculateRowFormData()
-                            {
-                                let rawdataproducer = JDRowDataProducer(size: (SizeData.rect.size), rowHeatData: (SizeData.data))
-                                Render_ProducerPair[render] = rawdataproducer
-                                //
-                                let visibleMacRect = biggestRegion
-                                let MapWidthInUIView = jdrealheatmap.frame.width
-                                let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
-                                rawdataproducer.reduceSize(scales: scaleUIView_MapRect)
-                                rawdataproducer.MaxHeatLevelInWholeMap = MaxHeatLevelinWholeMap
-                            }
-                            else
-                            {
-                                print("Size Error")
-                            }
+                            rawdataproducer  = JDRadiusPointRowDataProducer(size: (OverlayCGRect.size), rowHeatData: LocalFormData)
                         }
+                        else if(Datatype == .DotPoint)
+                        {
+                            rawdataproducer = JDDotPointRowDataProducer(size: (OverlayCGRect.size), rowHeatData: LocalFormData)
+                        }
+                        Render_ProducerPair[render] = rawdataproducer
+                        //
+                        let visibleMacRect = biggestRegion 
+                        let MapWidthInUIView = jdrealheatmap.frame.width
+                        let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
+                        rawdataproducer?.reduceSize(scales: scaleUIView_MapRect)
+                        rawdataproducer?.MaxHeatLevelInWholeMap = MaxHeatLevelinWholeMap
+                        return
                     }
-                    NotifyOverlayRender()
+                }
+                fatalError("RenderPair may be wrong")
+            }
+            //
+            if(Datatype == .RadiusPoint)
+            {
+                for overlay in jdrealheatmap.overlays
+                {
+                    if let heatoverlay = overlay as? JDHeatRadiusPointOverlay
+                    {
+                        OverlayRender(heatoverlay: heatoverlay)
+                    }
+                }
+            }
+            else if(Datatype == .DotPoint)
+            {
+                if(jdrealheatmap.overlays.count == 1)
+                {
+                    if let dotoverlay = jdrealheatmap.overlays[0] as? JDHeatDotPointOverlay
+                    {
+                        OverlayRender(heatoverlay: dotoverlay)
+                    }
                 }
             }
         }
@@ -232,15 +259,19 @@ class JDHeatMapMissionController:NSObject
                             render.Bitmapsize = producer.FitnessIntSize
                             render.BytesPerRow = producer.BytesPerRow
                             render.dataReference.append(contentsOf: producer.RowData)
+                            render.setNeedsDisplay()
                             producer.rowformdatas = []
                         }
                     }
                 }
             }
+            print("done")
             self.Caculating = false
             DispatchQueue.main.sync {
                 jdrealheatmap.indicator?.stopAnimating()
-                jdrealheatmap.setVisibleMapRect(biggestRegion, animated: true)
+                let ZoomOrigin = MKMapPoint(x: biggestRegion.origin.x - biggestRegion.size.width * 2, y: biggestRegion.origin.y - biggestRegion.size.height * 2)
+                let zoomoutregion = MKMapRect(origin: ZoomOrigin, size: MKMapSize(width: biggestRegion.size.width * 4, height: biggestRegion.size.height * 4))
+                jdrealheatmap.setVisibleMapRect(zoomoutregion, animated: true)
             }
         }
         computing()
@@ -280,7 +311,7 @@ extension JDHeatMapMissionController
                                 /*
                                     Exam the cgimage which draw in last time have more pixel?
                                 */
-                                let newWidth = Int(rawdataproducer.OriginSize.width * CGFloat(scaleUIView_MapRect) * 1.5)
+                                let newWidth = Int(rawdataproducer.OriginCGSize.width * CGFloat(scaleUIView_MapRect) * 1.5)
                                 if let lastimage = render.Lastimage
                                 {
                                     if(lastimage.width > newWidth) { return }

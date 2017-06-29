@@ -27,12 +27,7 @@ public class JDRealHeatMap:MKMapView
     var missionController:JDHeatMapMissionController!
     var indicator:UIActivityIndicatorView?
     
-    /**
-    
-     
-     
-    */
-    public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .DotPoint,mixermode mode:ColorMixerMode = .DistinctMode) {
+    public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .RadiusPoint,mixermode mode:ColorMixerMode = .DistinctMode) {
         super.init(frame: frame)
         self.showsScale = true
         self.delegate = self
@@ -61,8 +56,8 @@ public class JDRealHeatMap:MKMapView
         indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
         indicator?.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(indicator!)
-        let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 50)
-        let sizeHeight = NSLayoutConstraint(item: indicator!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 50)
+        let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 80)
+        let sizeHeight = NSLayoutConstraint(item: indicator!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 80)
         let rightCon = NSLayoutConstraint(item: indicator!, attribute: .trailing, relatedBy: .equal, toItem: self, attribute: .trailing, multiplier: 1.0, constant: 0)
         let BottomCon = NSLayoutConstraint(item: indicator!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0)
         indicator?.addConstraints([sizeWidth,sizeHeight])
@@ -87,16 +82,8 @@ extension JDRealHeatMap:MKMapViewDelegate
     }
     
     public func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
-        print(#function)
         missionController.mapViewWillStartRenderingMap()
     }
-    
-   
-    public func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool)
-    {
-        
-    }
-    
 }
 
 public protocol JDHeatMapDelegate {
@@ -113,8 +100,6 @@ extension JDHeatMapDelegate
         return 100
     }
 }
-
-
 
 struct JDHeatPoint
 {

@@ -22,6 +22,7 @@ struct IntSize {
 
 /**
   All this class needs to know is relative position & CGSize
+  And Produce an array of rgba colro
  **/
 class JDRowDataProducer:NSObject
 {
@@ -29,24 +30,25 @@ class JDRowDataProducer:NSObject
         These two variable should not be modified after
     */
     var Originrowformdatas:[RowFormHeatData] = []
-    var OriginSize:CGSize = CGSize.zero
+    var OriginCGSize:CGSize = CGSize.zero
     //
     static var theColorMixer:JDHeatColorMixer = JDHeatColorMixer()
     var MaxHeatLevelInWholeMap:Int = 0
+    //
     var RowData:[UTF8Char] = []
     var rowformdatas:[RowFormHeatData] = []
     var FitnessIntSize:IntSize!
+    
     var BytesPerRow:Int
     {
         return 4 * FitnessIntSize.width
     }
-    
-    
+
     init(size:CGSize,rowHeatData:[RowFormHeatData])
     {
         super.init()
         self.Originrowformdatas = rowHeatData
-        self.OriginSize = size
+        self.OriginCGSize = size
     }
     /**
         Sould not Miss this or the image size will up to GB
@@ -55,24 +57,35 @@ class JDRowDataProducer:NSObject
     func reduceSize(scales:Double)
     {
         let scale:CGFloat = CGFloat(scales) * 1.5
-        let newWidth = Int(OriginSize.width * scale)
-        let newHeight = Int(OriginSize.height * scale)
-        rowformdatas = Originrowformdatas
+        let newWidth = Int(OriginCGSize.width * scale)
+        let newHeight = Int(OriginCGSize.height * scale)
+        self.FitnessIntSize = IntSize(width: newWidth, height: newHeight)
+        
         func reduceRowData()
         {
-            for i in 0..<Originrowformdatas.count
+            rowformdatas.removeAll()
+            for origindata in Originrowformdatas
             {
-                rowformdatas[i].localCGpoint.x *= scale
-                rowformdatas[i].localCGpoint.y *= scale
-                rowformdatas[i].radius *= scale
+                let newX = origindata.localCGpoint.x * scale
+                let newY = origindata.localCGpoint.y * scale
+                let newCGPoint = CGPoint(x: newX, y: newY)
+                let newRadius = origindata.radius * scale
+                let modifiRowFormData = RowFormHeatData(heatlevel: origindata.heatlevel, localCGpoint: newCGPoint , radius: newRadius)
+                rowformdatas.append(modifiRowFormData)
             }
         }
         reduceRowData()
-        self.FitnessIntSize = IntSize(width: newWidth, height: newHeight)
         RowData = Array.init(repeating: 0, count: 4 * FitnessIntSize.width * FitnessIntSize.height)
     }
     
     func produceRowData()
+    {
+    }
+}
+
+class JDRadiusPointRowDataProducer:JDRowDataProducer
+{
+    override func produceRowData()
     {
         print(#function + "w:\(FitnessIntSize.width),w:\(FitnessIntSize.height)")
         var ByteCount:Int = 0
@@ -113,7 +126,54 @@ class JDRowDataProducer:NSObject
                 ByteCount += 4
             }
         }
-        
+    }
+}
+
+class JDDotPointRowDataProducer:JDRowDataProducer
+{
+    override func produceRowData()
+    {
+        print(#function + "w:\(FitnessIntSize.width),w:\(FitnessIntSize.height)")
+        var ByteCount:Int = 0
+        for h in 0..<self.FitnessIntSize.height
+        {
+            for w in 0..<self.FitnessIntSize.width
+            {
+                var destiny:Float = 0
+                var MaxDistance:Float = 0.0
+                for heatpoint in self.rowformdatas
+                {
+                    let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
+                    MaxDistance = (bytesDistanceToPoint > MaxDistance) ? bytesDistanceToPoint : MaxDistance
+                }
+                for heatpoint in self.rowformdatas
+                {
+                    let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
+                    if(MaxHeatLevelInWholeMap != 0)
+                    {
+                        let ratio = (MaxDistance - bytesDistanceToPoint)/MaxDistance
+                        destiny += ratio * heatpoint.heatlevel/Float(MaxHeatLevelInWholeMap)
+                    }
+                }
+                destiny /= Float(self.rowformdatas.count)
+                if(destiny > 0.5)
+                {
+                
+                    destiny = 1
+                }
+                //let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
+                let rgb = JDRowDataProducer.theColorMixer.getClearify(inDestiny: destiny)
+                let redRow:UTF8Char = rgb.redRow
+                let greenRow:UTF8Char = rgb.greenRow
+                let BlueRow:UTF8Char = rgb.BlueRow
+                let alpha:UTF8Char = UTF8Char(Int(destiny * 255))
+                self.RowData[ByteCount] = redRow
+                self.RowData[ByteCount+1] = greenRow
+                self.RowData[ByteCount+2] = BlueRow
+                self.RowData[ByteCount+3] = alpha
+                ByteCount += 4
+            }
+        }
     }
 }
 
