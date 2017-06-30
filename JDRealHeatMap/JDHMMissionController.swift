@@ -11,16 +11,13 @@ import MapKit
 
 class JDHeatMapMissionController:NSObject
 {
-    typealias HeatRenderFor = [JDHeatOverlay:JDHeatOverlayRender]
     typealias ProducerFor = [JDHeatOverlayRender:JDRowDataProducer]
     //
-    var Overlay_RenderPair:HeatRenderFor = [:]
     var Render_ProducerPair:ProducerFor = [:]
     var jdrealheatmap:JDRealHeatMap!
     var Caculating:Bool = false
     var Datatype:DataPointType = .DotPoint
     var Mixertype:ColorMixerMode = .DistinctMode
-    
     //
     var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
     var MaxHeatLevelinWholeMap:Int = 0
@@ -34,12 +31,17 @@ class JDHeatMapMissionController:NSObject
         Datatype = t
         Mixertype = m
     }
+    
+    func renderFor(overlay:JDHeatOverlay)->JDHeatOverlayRender?
+    {
+        return (self.jdrealheatmap.renderer(for: overlay) as? JDHeatOverlayRender)
+    }
+    
     /**
         1.0 The User Change Data,so Call this Refresh to Recollect the Data
     **/
     func ExecuteRefreshMission()
     {
-        Overlay_RenderPair = [:]
         Render_ProducerPair = [:]
         /*
            1.1 Call the Delegate
@@ -78,8 +80,6 @@ class JDHeatMapMissionController:NSObject
                     else if(jdrealheatmap.overlays.count == 0)
                     {
                         let BigOverlay = JDHeatDotPointOverlay(first: newHeatPoint)
-                        let onlyRender = JDDotPointOverlayRender(heat: BigOverlay)
-                        self.Overlay_RenderPair[BigOverlay] = onlyRender
                         jdrealheatmap.add(BigOverlay)
                         return
                     }
@@ -108,8 +108,6 @@ class JDHeatMapMissionController:NSObject
                     }
                     //Create New Overlay,OverlayRender會一起創造
                     let heatoverlay = JDHeatRadiusPointOverlay(first: newHeatPoint)
-                    let render = JDRadiusPointOverlayRender(heat: heatoverlay)
-                    self.Overlay_RenderPair[heatoverlay] = render
                     jdrealheatmap.add(heatoverlay)
                 }
                 CluseToOverlay()
@@ -144,7 +142,6 @@ class JDHeatMapMissionController:NSObject
                                 {
                                     heatoverlayX.insertHeatpoint(input: point)
                                 }
-                                Overlay_RenderPair[heatoverlayY] = nil
                             }
                             jdrealheatmap.remove(overlayY)
                             break
@@ -183,7 +180,7 @@ class JDHeatMapMissionController:NSObject
         {
             func OverlayRender(heatoverlay:JDHeatOverlay)
             {
-                if let render = Overlay_RenderPair[heatoverlay]
+                if let render = renderFor(overlay: heatoverlay)
                 {
                     if let CaculatedRowFormData = render.caculateRowFormData()
                     {
@@ -251,7 +248,7 @@ class JDHeatMapMissionController:NSObject
             {
                 if let heatoverlay = overlay as? JDHeatOverlay
                 {
-                    if let render = Overlay_RenderPair[heatoverlay]
+                    if let render = renderFor(overlay: heatoverlay)
                     {
                        if let producer = Render_ProducerPair[render]
                        {
@@ -286,23 +283,26 @@ extension JDHeatMapMissionController
     {
         if(Caculating) {return} //If last time rendering not finishe yet...
         let visibleMacRect = jdrealheatmap.visibleMapRect
+        if(visibleMacRect.size.width == biggestRegion.size.width &&
+            visibleMacRect.origin.x == biggestRegion.origin.x &&
+            visibleMacRect.origin.y == biggestRegion.origin.y) {return}
         let RerenderNessceryCheck = LastVisibleMapRect.size.width / visibleMacRect.size.width
         //The map zoom doesn't change significant
         if(RerenderNessceryCheck > 0.7 && RerenderNessceryCheck < 1.66 ) {return}
         print(#function)
+        self.Caculating = true
         LastVisibleMapRect = visibleMacRect
         jdrealheatmap.indicator?.startAnimating()
         //
         func compuing()
         {
-            self.Caculating = true
             for overlay in jdrealheatmap.overlays
             {
                 if let heatoverlay = overlay as? JDHeatOverlay
                 {
                     func RecaculateOverlayRender()
                     {
-                        if let render = Overlay_RenderPair[heatoverlay]
+                        if let render = renderFor(overlay: heatoverlay)
                         {
                             let MapWidthInUIView = jdrealheatmap.frame.width
                             let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
@@ -315,7 +315,7 @@ extension JDHeatMapMissionController
                                 if let lastimage = render.Lastimage
                                 {
                                     if(lastimage.width > newWidth) { return }
-                                    else { render.Lastimage = nil }
+                                    else { render.Lastimage = nil } //Make it can draw
                                 }
                                 /*
                                     Recaculate new Size new Data to draw a new cgimage
@@ -325,7 +325,6 @@ extension JDHeatMapMissionController
                                 rawdataproducer.produceRowData()
                                 render.Bitmapsize = rawdataproducer.FitnessIntSize
                                 render.BytesPerRow = rawdataproducer.BytesPerRow
-                                render.dataReference.removeAll()
                                 render.dataReference.append(contentsOf: rawdataproducer.RowData)
                                 render.setNeedsDisplay()
                                 rawdataproducer.rowformdatas = []
@@ -342,8 +341,8 @@ extension JDHeatMapMissionController
             compuing()
             DispatchQueue.main.sync(execute: { 
                 self.jdrealheatmap.indicator?.stopAnimating()
+                self.Caculating = false
             })
-            self.Caculating = false
         })
     }
 }

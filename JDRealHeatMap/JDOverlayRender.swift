@@ -16,11 +16,6 @@ import MapKit
 class JDHeatOverlayRender:MKOverlayRenderer
 {
     var Lastimage:CGImage?
-    var CanDraw:Bool{
-        get{
-            return (dataReference.count != 0)
-        }
-    }
     var Bitmapsize:IntSize = IntSize()
     var dataReference:[UTF8Char] = []
     var BytesPerRow:Int = 0
@@ -38,22 +33,20 @@ class JDHeatOverlayRender:MKOverlayRenderer
     /**
      drawMapRect is the real meat of this class; it defines how MapKit should render this view when given a specific MKMapRect, MKZoomScale, and the CGContextRef
      */
-    override func canDraw(_ mapRect: MKMapRect, zoomScale: MKZoomScale) -> Bool {
-        return CanDraw
-    }
-    
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
-        if(!CanDraw)
-        {
-            return
-        }
+        
         guard let overlay = overlay as? JDHeatOverlay else {
             return
         }
+        //Last Time Created image have more resolution, so keep using it
         if let lastTimeMoreHighSolutionImgae = Lastimage
         {
             let mapCGRect = rect(for: overlay.boundingMapRect)
             context.draw(lastTimeMoreHighSolutionImgae, in: mapCGRect)
+            return
+        }
+        else if(dataReference.count == 0 )
+        {
             return
         }
         //
@@ -68,6 +61,7 @@ class JDHeatOverlayRender:MKOverlayRenderer
                     memcpy(tempBuffer, &dataReference, BytesPerRow * Bitmapsize.height)
                     defer
                     {
+                        UIGraphicsPopContext()
                         free(tempBuffer)
                     }
                     let rgbColorSpace:CGColorSpace = CGColorSpaceCreateDeviceRGB()
@@ -76,7 +70,6 @@ class JDHeatOverlayRender:MKOverlayRenderer
                     {
                         return contextlayer.makeImage()
                     }
-                    print("Create fail")
                     return nil
                 }
                 
@@ -91,20 +84,19 @@ class JDHeatOverlayRender:MKOverlayRenderer
                         return contexts.makeImage()
                     }
                 }
-                
-                defer {
-                    UIGraphicsEndImageContext()
-                }
-                
+                print("Create fail")
                 return nil
             }
-            return CreateContextOldWay()
+            let img = CreateContextOldWay()
+            UIGraphicsEndImageContext()
+            return img
         }
         if let tempimage = getHeatMapContextImage()
         {
             let mapCGRect = rect(for: overlay.boundingMapRect)
             Lastimage = tempimage
             context.clear(mapCGRect)
+            self.dataReference.removeAll()
             context.draw(Lastimage!, in: mapCGRect)
         }
         else{
@@ -126,8 +118,9 @@ class JDRadiusPointOverlayRender:JDHeatOverlayRender
         {
             let mkmappoint = heatpoint.MidMapPoint
             let GlobalCGpoint:CGPoint = self.point(for: mkmappoint)
-            let localX = GlobalCGpoint.x - (rect(for: overlay.boundingMapRect).origin.x)
-            let localY = GlobalCGpoint.y - (rect(for: overlay.boundingMapRect).origin.y)
+            let OverlayCGRect = rect(for: overlay.boundingMapRect)
+            let localX = GlobalCGpoint.x - (OverlayCGRect.origin.x)
+            let localY = GlobalCGpoint.y - (OverlayCGRect.origin.y)
             let loaclCGPoint = CGPoint(x: localX, y: localY)
             //
             let radiusinMKDistanse:Double = heatpoint.radiusInMKDistance

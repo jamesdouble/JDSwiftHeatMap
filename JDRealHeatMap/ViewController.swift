@@ -12,8 +12,8 @@ import MapKit
 class ViewController: UIViewController {
 
     var map:JDRealHeatMap?
-    var testpointCoor = [CLLocationCoordinate2D(latitude: 23.0, longitude: 120),CLLocationCoordinate2D(latitude: 23.3, longitude: 119),CLLocationCoordinate2D(latitude: 24.0, longitude: 120),
-        CLLocationCoordinate2D(latitude: 24.0, longitude: 121)
+    var testpointCoor = [CLLocationCoordinate2D(latitude: 25.0, longitude: 120),CLLocationCoordinate2D(latitude: 25.3, longitude: 119),CLLocationCoordinate2D(latitude: 26.0, longitude: 120),
+        CLLocationCoordinate2D(latitude: 26.0, longitude: 121)
         ]
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,7 +33,7 @@ class ViewController: UIViewController {
         for i in 0..<20
         {
             let loti:Double = Double(119) + Double(Float(arc4random()) / Float(UINT32_MAX))
-            let lati:Double = Double(20 + arc4random_uniform(2)) + 2 * Double(Float(arc4random()) / Float(UINT32_MAX))
+            let lati:Double = Double(22 + arc4random_uniform(2)) + 2 * Double(Float(arc4random()) / Float(UINT32_MAX))
             testpointCoor.append(CLLocationCoordinate2D(latitude: lati, longitude: loti))
         }
     }

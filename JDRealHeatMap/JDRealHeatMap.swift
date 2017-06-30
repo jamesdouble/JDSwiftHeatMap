@@ -29,6 +29,19 @@ public class JDRealHeatMap:MKMapView
     
     public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .RadiusPoint,mixermode mode:ColorMixerMode = .DistinctMode) {
         super.init(frame: frame)
+        JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: [UIColor.blue,UIColor.green,UIColor.red], level: 6)
+        self.showsScale = true
+        self.delegate = self
+        self.heatmapdelegate = d
+        missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: type,mode: mode)
+        refresh()
+        InitIndicator()
+        
+    }
+    
+    public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .RadiusPoint,mixermode mode:ColorMixerMode = .DistinctMode,BasicColors array:[UIColor],devideLevel:Int) {
+        super.init(frame: frame)
+        JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: array, level: devideLevel)
         self.showsScale = true
         self.delegate = self
         self.heatmapdelegate = d
@@ -71,12 +84,15 @@ extension JDRealHeatMap:MKMapViewDelegate
 {
     public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
     {
-        if let jdoverlay = overlay as? JDHeatOverlay
+        if let dotOverlay = overlay as? JDHeatDotPointOverlay
         {
-            if let createdRender:JDHeatOverlayRender = missionController.Overlay_RenderPair[jdoverlay]
-            {
-                return createdRender
-            }
+            let onlyRender = JDDotPointOverlayRender(heat: dotOverlay)
+            return onlyRender
+        }
+        else if let radiusOverlay = overlay as? JDHeatRadiusPointOverlay
+        {
+            let render = JDRadiusPointOverlayRender(heat: radiusOverlay)
+            return render
         }
         return MKOverlayRenderer()
     }
