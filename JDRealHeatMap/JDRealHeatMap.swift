@@ -15,11 +15,6 @@ public enum DataPointType
     case RadiusPoint
 }
 
-public enum ColorMixerMode
-{
-    case BlurryMode
-    case DistinctMode
-}
 
 public class JDRealHeatMap:MKMapView
 {
@@ -29,7 +24,8 @@ public class JDRealHeatMap:MKMapView
     
     public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .RadiusPoint,mixermode mode:ColorMixerMode = .DistinctMode) {
         super.init(frame: frame)
-        JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: [UIColor.blue,UIColor.green,UIColor.red], level: 6)
+        //JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: [UIColor.blue,UIColor.green,UIColor.red], level: 1)
+        JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: [UIColor.blue,UIColor.red], level: 1)
         self.showsScale = true
         self.delegate = self
         self.heatmapdelegate = d

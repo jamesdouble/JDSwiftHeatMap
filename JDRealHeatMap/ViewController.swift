@@ -19,7 +19,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         addRandomData()
-        map = JDRealHeatMap(frame: self.view.frame, delegate: self, pointtype: .RadiusPoint )
+        map = JDRealHeatMap(frame: self.view.frame, delegate: self, pointtype: .RadiusPoint, mixermode: .BlurryMode)
         self.view.addSubview(map!)
     }
 

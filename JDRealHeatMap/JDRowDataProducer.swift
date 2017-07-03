@@ -33,7 +33,6 @@ class JDRowDataProducer:NSObject
     var OriginCGSize:CGSize = CGSize.zero
     //
     static var theColorMixer:JDHeatColorMixer!
-    var MaxHeatLevelInWholeMap:Int = 0
     //
     var RowData:[UTF8Char] = []
     var rowformdatas:[RowFormHeatData] = []
@@ -94,27 +93,21 @@ class JDRadiusPointRowDataProducer:JDRowDataProducer
             for w in 0..<self.FitnessIntSize.width
             {
                 var destiny:Float = 0
-                var involveCount:Int = 0
                 for heatpoint in self.rowformdatas
                 {
-                    let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
+                    let pixelCGPoint = CGPoint(x: w, y: h)
+                    let bytesDistanceToPoint:Float = pixelCGPoint.distanceTo(anther: heatpoint.localCGpoint)
                     let ratio:Float = 1 - (bytesDistanceToPoint / Float(heatpoint.radius))
                     if(ratio > 0)
                     {
-                        involveCount += 1
                         destiny += ratio * heatpoint.heatlevel
                     }
-                }
-                if(MaxHeatLevelInWholeMap != 0)
-                {
-                    destiny /= Float(MaxHeatLevelInWholeMap)
                 }
                 if(destiny > 1)
                 {
                     destiny = 1
                 }
-                //let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
-                let rgb = JDRowDataProducer.theColorMixer.getClearify(inDestiny: destiny)
+                let rgb = JDRowDataProducer.theColorMixer.getDestinyColorRGB(inDestiny: destiny)
                 let redRow:UTF8Char = rgb.redRow
                 let greenRow:UTF8Char = rgb.greenRow
                 let BlueRow:UTF8Char = rgb.BlueRow
@@ -149,20 +142,15 @@ class JDDotPointRowDataProducer:JDRowDataProducer
                 for heatpoint in self.rowformdatas
                 {
                     let bytesDistanceToPoint:Float = CGPoint(x: w, y: h).distanceTo(anther: heatpoint.localCGpoint)
-                    if(MaxHeatLevelInWholeMap != 0)
-                    {
-                        let ratio = (MaxDistance - bytesDistanceToPoint)/MaxDistance
-                        destiny += ratio * heatpoint.heatlevel/Float(MaxHeatLevelInWholeMap)
-                    }
+                    let ratio = (MaxDistance - bytesDistanceToPoint)/MaxDistance
+                    destiny += ratio * heatpoint.heatlevel
                 }
                 destiny /= Float(self.rowformdatas.count)
-                if(destiny > 0.5)
+                if(destiny > 1)
                 {
-                
                     destiny = 1
                 }
-                //let rgb = JDRowDataProducer.theColorMixer.getRGB(inDestiny: destiny)
-                let rgb = JDRowDataProducer.theColorMixer.getClearify(inDestiny: destiny)
+                let rgb = JDRowDataProducer.theColorMixer.getDestinyColorRGB(inDestiny: destiny)
                 let redRow:UTF8Char = rgb.redRow
                 let greenRow:UTF8Char = rgb.greenRow
                 let BlueRow:UTF8Char = rgb.BlueRow

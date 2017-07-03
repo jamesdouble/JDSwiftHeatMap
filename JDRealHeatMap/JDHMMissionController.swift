@@ -21,7 +21,6 @@ class JDHeatMapMissionController:NSObject
     //
     var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
     var MaxHeatLevelinWholeMap:Int = 0
-    
     //
     let missionThread = DispatchQueue(label: "MissionThread")
     
@@ -30,6 +29,7 @@ class JDHeatMapMissionController:NSObject
         jdrealheatmap = map
         Datatype = t
         Mixertype = m
+        JDRowDataProducer.theColorMixer.mixerMode = m
     }
     
     func renderFor(overlay:JDHeatOverlay)->JDHeatOverlayRender?
@@ -113,6 +113,7 @@ class JDHeatMapMissionController:NSObject
                 CluseToOverlay()
             }
         }
+        if(MaxHeatLevelinWholeMap == 0) { fatalError("Max Heat level should not be 0") }
         /*
          1.3.3  Reduce The Recover Overlay
          */
@@ -182,7 +183,7 @@ class JDHeatMapMissionController:NSObject
             {
                 if let render = renderFor(overlay: heatoverlay)
                 {
-                    if let CaculatedRowFormData = render.caculateRowFormData()
+                    if let CaculatedRowFormData = render.caculateRowFormData(maxHeat: MaxHeatLevelinWholeMap)
                     {
                         var rawdataproducer:JDRowDataProducer!
                         let OverlayCGRect = CaculatedRowFormData.rect
@@ -201,7 +202,6 @@ class JDHeatMapMissionController:NSObject
                         let MapWidthInUIView = jdrealheatmap.frame.width
                         let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
                         rawdataproducer?.reduceSize(scales: scaleUIView_MapRect)
-                        rawdataproducer?.MaxHeatLevelInWholeMap = MaxHeatLevelinWholeMap
                         return
                     }
                 }
