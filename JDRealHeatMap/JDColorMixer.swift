@@ -132,26 +132,27 @@ class JDHeatColorMixer:NSObject
             let AverageWeight:Float = 1.0 / Float(colorCount-1)
             var counter:Float = 0.0
             var RDiff:Float = 0.0
+            var Index = 0
             for color in colorArray
             {
-                counter  += AverageWeight
-                if(D < counter) //The Target is between this two color
+                if( ((D < (counter + AverageWeight)) && (D > counter))) //The Target is between this two color
                 {
                     TargetColor.append(color)
-                    if(TargetColor.count == 2)
-                    {
-                        break
-                    }
-                    let more = (counter - D)
-                    RDiff = AverageWeight - more //
+                    let secondcolor = colorArray[Index+1]
+                    TargetColor.append(secondcolor)
+                    //
+                    RDiff = (D - counter)
+                    break
                 }
                 else if(counter == D)
                 {
                     TargetColor = [color,color]
                     break
                 }
-                
+                Index += 1
+                counter  += AverageWeight
             }
+            if(RDiff > 1) { fatalError("RDiff Error") }
             let LDiff = 1.0 - RDiff
             //
             func caculateRGB()->BytesRGB
@@ -170,6 +171,9 @@ class JDHeatColorMixer:NSObject
                 let redRow:UTF8Char = UTF8Char(Int(LRed * LDiff + RRed * RDiff))
                 let GreenRow:UTF8Char = UTF8Char(Int(LGreen * LDiff + RGreen * RDiff))
                 let BlueRow:UTF8Char = UTF8Char(Int(LBlue * LDiff + RBlue * RDiff))
+                if(BlueRow == 255) {
+                
+                }
                 return BytesRGB(redRow: redRow,
                                             greenRow: GreenRow,
                                             BlueRow: BlueRow,

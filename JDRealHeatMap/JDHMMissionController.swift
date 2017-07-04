@@ -265,7 +265,10 @@ class JDHeatMapMissionController:NSObject
             print("done")
             self.Caculating = false
             DispatchQueue.main.sync {
-                jdrealheatmap.indicator?.stopAnimating()
+                if(jdrealheatmap.showindicator)
+                {
+                    jdrealheatmap.indicator?.stopAnimating()
+                }
                 let ZoomOrigin = MKMapPoint(x: biggestRegion.origin.x - biggestRegion.size.width * 2, y: biggestRegion.origin.y - biggestRegion.size.height * 2)
                 let zoomoutregion = MKMapRect(origin: ZoomOrigin, size: MKMapSize(width: biggestRegion.size.width * 4, height: biggestRegion.size.height * 4))
                 jdrealheatmap.setVisibleMapRect(zoomoutregion, animated: true)
@@ -292,7 +295,10 @@ extension JDHeatMapMissionController
         print(#function)
         self.Caculating = true
         LastVisibleMapRect = visibleMacRect
-        jdrealheatmap.indicator?.startAnimating()
+        if(jdrealheatmap.showindicator)
+        {
+            jdrealheatmap.indicator?.startAnimating()
+        }
         //
         func compuing()
         {
@@ -339,8 +345,11 @@ extension JDHeatMapMissionController
         //
         missionThread.async(execute: {
             compuing()
-            DispatchQueue.main.sync(execute: { 
-                self.jdrealheatmap.indicator?.stopAnimating()
+            DispatchQueue.main.sync(execute: {
+                if(self.jdrealheatmap.showindicator)
+                {
+                    self.jdrealheatmap.indicator?.stopAnimating()
+                }
                 self.Caculating = false
             })
         })
