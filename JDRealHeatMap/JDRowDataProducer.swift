@@ -77,6 +77,9 @@ class JDRowDataProducer:NSObject
         RowData = Array.init(repeating: 0, count: 4 * FitnessIntSize.width * FitnessIntSize.height)
     }
     
+    /**
+        SubClass Should Override thie method
+    **/
     func produceRowData()
     {
     }
@@ -145,7 +148,7 @@ class JDDotPointRowDataProducer:JDRowDataProducer
                     let ratio = (MaxDistance - bytesDistanceToPoint)/MaxDistance
                     destiny += ratio * heatpoint.heatlevel
                 }
-                destiny /= Float(self.rowformdatas.count)
+                //destiny /= Float(self.rowformdatas.count)
                 if(destiny > 1)
                 {
                     destiny = 1

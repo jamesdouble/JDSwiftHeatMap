@@ -33,8 +33,7 @@ class JDHeatColorMixer:NSObject
     {
         devideLevel = level
         if(devideLevel == 0) {fatalError("devide level should not be 0")}
-        if(devideLevel == 1) { colorArray = array
-            return}
+        if(devideLevel == 1) { colorArray = array; return}
         for index in 0..<array.count
         {
             if(index == array.count-1) {break}
