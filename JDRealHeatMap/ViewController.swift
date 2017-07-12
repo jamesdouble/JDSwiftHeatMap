@@ -17,10 +17,10 @@ class ViewController: UIViewController {
         ]
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
         addRandomData()
-        //map = JDRealHeatMap(frame: self.view.frame, delegate: self, maptype: .RadiusBlurry,BasicColors: [UIColor.yellow,UIColor.red], devideLevel: 1)
+   
         map = JDRealHeatMap(frame: self.view.frame, delegate: self, maptype: .FlatDistinct)
+        map?.delegate = self
         self.view.addSubview(map!)
     }
 
