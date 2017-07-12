@@ -64,9 +64,15 @@ There are two delegate you need to pay close.
         	map?.heatmapViewWillStartRenderingMap(mapView)
     	}
 	}
+<<<<<<< Updated upstream
   	map.delegate = self
   	
 	```
+=======
+	map.delegate = self
+	
+  	```
+>>>>>>> Stashed changes
 	
 2. ***JDHeatMapDelegate***
 	
@@ -78,8 +84,13 @@ There are two delegate you need to pay close.
     func heatmap(HeatLevelFor index:Int) -> Int
     func heatmap(RadiusInKMFor index:Int) -> Double
     func heatmap(CoordinateFor index:Int) -> CLLocationCoordinate2D
+<<<<<<< Updated upstream
 }
 
+=======
+		}
+	
+>>>>>>> Stashed changes
 	```
 
 	
