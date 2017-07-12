@@ -64,8 +64,9 @@ There are two delegate you need to pay close.
         	map?.heatmapViewWillStartRenderingMap(mapView)
     	}
 	}
-  map.delegate = self
-  	```
+  	map.delegate = self
+  	
+	```
 	
 2. ***JDHeatMapDelegate***
 	
@@ -78,6 +79,7 @@ There are two delegate you need to pay close.
     func heatmap(RadiusInKMFor index:Int) -> Double
     func heatmap(CoordinateFor index:Int) -> CLLocationCoordinate2D
 }
+
 	```
 
 	
