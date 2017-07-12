@@ -40,6 +40,23 @@ class ViewController: UIViewController {
     }
 }
 
+extension ViewController:MKMapViewDelegate
+{
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let heatoverlay = map?.heatmapView(mapView, rendererFor: overlay)
+        {
+            return heatoverlay
+        }
+        else
+        {
+            return MKOverlayRenderer()
+        }
+    }
+    
+    func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
+        map?.heatmapViewWillStartRenderingMap(mapView)
+    }
+}
 
 extension ViewController:JDHeatMapDelegate
 {

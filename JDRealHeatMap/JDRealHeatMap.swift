@@ -93,7 +93,8 @@ public class JDRealHeatMap:MKMapView
 
 extension JDRealHeatMap:MKMapViewDelegate
 {
-    public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
+    
+    public func heatmapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer?
     {
         if let FlatOverlay = overlay as? JDHeatFlatPointOverlay
         {
@@ -108,8 +109,25 @@ extension JDRealHeatMap:MKMapViewDelegate
         return MKOverlayRenderer()
     }
     
-    public func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
+    public func heatmapViewWillStartRenderingMap(_ mapView: MKMapView)
+    {
         missionController.mapViewWillStartRenderingMap()
+    }
+    
+    public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
+    {
+        if let heatoverlay = self.heatmapView(mapView, rendererFor: overlay)
+        {
+            return heatoverlay
+        }
+        else
+        {
+            return MKOverlayRenderer()
+        }
+    }
+    
+    public func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
+        self.heatmapViewWillStartRenderingMap(mapView)
     }
 }
 

@@ -1,4 +1,5 @@
 ![Alt text](https://raw.githubusercontent.com/jamesdouble/JDSwiftHeatMap/master/Readme_img/logo.png?token=AJBUU8PbfD_WRNgAB4UEqbt1vDhm2iS3ks5ZbgTowA%3D%3D)
+
 **JDSwiftMap** is an IOS Native MapKit Library.
 
 You can easily make a highly customized HeatMap.
@@ -9,29 +10,80 @@ You can easily make a highly customized HeatMap.
 ![Alt text](https://img.shields.io/badge/Author-JamesDouble-blue.svg?link=http://https://jamesdouble.github.io/index.html&link=http://https://jamesdouble.github.io/index.html)
 
 
+![Alt text](https://raw.githubusercontent.com/jamesdouble/JDSwiftHeatMap/master/Readme_img/jdheatmapDemo.png?token=AJBUU1UA_L_wx5f_E3iRsaUGAh_xg3pCks5Zb1yIwA%3D%3D)
 
-
+# Installation
 
 
 
 # Usage
 
-To add JDBreaksLoading to your view, just give it a frame and addSubview.
+JDSwiftHeatMap is based on **IOS native MKMapView**, 
+
+so you must familiar with.
+
+## Init
+
+*  Give a frame. 
+*  Follow JDHeatMapDelegate.
+*  Choose a MapType Below
 
 ```Swift
-  let jdbreaksLoading:JDBreaksLoading = JDBreaksLoading(frame: frame)
-  self.view.addSubview(jdbreaksLoading)
+  map = JDRealHeatMap(frame: self.view.frame, delegate: self, maptype: .FlatDistinct)
+  self.view.addSubview(map!)
 ```
 
-### Game Configuration 
-The default [ Ball, Block , Paddle -> All white, Block count: 3 ]
+## Delegate - Most Important
 
-If you want to chagnge some game setting (color, block...etc).
+There are two delegate you need to pay close.
+ 
+1. ***MKMapViewDelegate*** - (Optional)
 
-You will need to set 'JDBreaksGameConfiguration'
+	This is the delegate you familiar,( AnnoationView For.., Render For...) You sure can use this delegate in old way, or not to follow this delegate.
+		
+	 **But if you do, you may need to follow two essential function.**
+	 
+	 ```Swift
+	extension ViewController:MKMapViewDelegate
+	{
+		func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
+		 {
+        	if let heatoverlay = map?.heatmapView(mapView, rendererFor: overlay)
+        	{
+          	  return heatoverlay
+        	}
+        	else
+        	{
+        	    var yourownRender = yourownRenderClass()
+        	    return yourownRender
+        	}
+    	}
+    
+   		func mapViewWillStartRenderingMap(_ mapView: MKMapView)
+   		 {
+        	map?.heatmapViewWillStartRenderingMap(mapView)
+    	}
+	}
+  map.delegate = self
+  	```
+	
+2. ***JDHeatMapDelegate***
+	
+	When we talk to Heat Map, the most important thing is ***"Data"*** !
+	
+	```Swift
+	public protocol JDHeatMapDelegate {
+    func heatmap(HeatPointCount heatmap:JDRealHeatMap) -> Int
+    func heatmap(HeatLevelFor index:Int) -> Int
+    func heatmap(RadiusInKMFor index:Int) -> Double
+    func heatmap(CoordinateFor index:Int) -> CLLocationCoordinate2D
+}
+	```
 
-```Swift
-  let config:JDBreaksGameConfiguration = JDBreaksGameConfiguration(paddle_color: UIColor.white, ball_color:  UIColor.white, block_color:  UIColor.white, blocks_count: 3)
-  let jd:JDBreaksLoading = JDBreaksLoading(frame: frame, configuration: config)
-  self.view.addSubview(jd)
-```
+	
+	 
+	 
+	 
+	 
+	 
+	 
