@@ -1,16 +1,18 @@
-# JDBreaksLoading
+![Alt text](https://raw.githubusercontent.com/jamesdouble/JDSwiftHeatMap/master/Readme_img/logo.png?token=AJBUU8PbfD_WRNgAB4UEqbt1vDhm2iS3ks5ZbgTowA%3D%3D)
+**JDSwiftMap** is an IOS Native MapKit Library.
 
-***
-# Introduction
-JDBreaksLoading Based on simple UIView and SpriteKit.
+You can easily make a highly customized HeatMap.
 
-You can easily start up a little breaking game by one line.
+![Alt text](https://img.shields.io/badge/SwiftVersion-3.0+-red.svg?link=http://left&link=http://right)
+![Alt text](https://img.shields.io/badge/IOSVersion-8.0+-green.svg)
+![Alt text](https://img.shields.io/badge/BuildVersion-1.0.0-green.svg)
+![Alt text](https://img.shields.io/badge/Author-JamesDouble-blue.svg?link=http://https://jamesdouble.github.io/index.html&link=http://https://jamesdouble.github.io/index.html)
 
-By the way, don't make user wait too long to play the game~
 
-Thanks for using.
 
-![Alt text](https://img.shields.io/badge/SwiftVersion-3.1-<COLOR>.svg)
+
+
+
 
 # Usage
 

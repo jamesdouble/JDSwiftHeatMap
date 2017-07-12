@@ -8,7 +8,7 @@
 
 import UIKit
 
-public enum ColorMixerMode
+enum ColorMixerMode
 {
     case BlurryMode
     case DistinctMode
@@ -26,25 +26,25 @@ struct BytesRGB
 class JDHeatColorMixer:NSObject
 {
     var colorArray:[UIColor]  = []
-    var devideLevel:Int
     var mixerMode:ColorMixerMode = .DistinctMode
+    
     
     init(array:[UIColor],level:Int)
     {
-        devideLevel = level
+        let devideLevel = level
         if(devideLevel == 0) {fatalError("devide level should not be 0")}
         if(devideLevel == 1) { colorArray = array; return}
         for index in 0..<array.count
         {
-            if(index == array.count-1) {break}
+            if(index == array.count-1) {break} //LastColor
             
             if let rgb = array[index].rgb(),let rgb2 = array[index+1].rgb()
             {
-                let greenDiff = (rgb2.green - rgb.green) / Float(devideLevel-1)
-                let redDiff = (rgb2.red - rgb.red) / Float(devideLevel-1)
-                let blueDiff = (rgb2.blue - rgb.blue) / Float(devideLevel-1)
-                //
-                for color1toColor2 in 0..<devideLevel
+                let greenDiff = (rgb2.green - rgb.green) / Float(devideLevel)
+                let redDiff = (rgb2.red - rgb.red) / Float(devideLevel)
+                let blueDiff = (rgb2.blue - rgb.blue) / Float(devideLevel)
+                //Add All Color to array
+                for color1toColor2 in 0..<(devideLevel+1)
                 {
                     let step:Float = Float(color1toColor2)
                     let red = CGFloat(rgb.red + (redDiff * step)) / 255.0
@@ -61,7 +61,7 @@ class JDHeatColorMixer:NSObject
     {
         func getClearify(inDestiny D:Float)->BytesRGB
         {
-            if(D == 0) //Only Radius Data Type will Have 0 destiny
+            if(D == 0) //Only None Flat Data Type will Have 0 destiny
             {
                 let rgb:BytesRGB = BytesRGB(redRow: 0,
                                             greenRow: 0,
@@ -76,20 +76,15 @@ class JDHeatColorMixer:NSObject
                 colorArray.append(UIColor.clear)
             }
             
-            var TargetColor:UIColor = colorArray.last!
-            let AverageWeight:Float = 1.0 / Float(colorCount)
+            var TargetColor:UIColor = UIColor()
+            let AverageWeight:Float = 1.0 / Float(colorCount-1)
             var counter:Float = 0.0
             for color in colorArray
             {
                 let next = counter + AverageWeight
-                if((counter < D) && D<next)
+                if((counter <= D) && D<next)
                 {
                     TargetColor = color
-                    break
-                }
-                else if(D == next)
-                {
-                    TargetColor = UIColor.brown
                     break
                 }
                 else
@@ -99,6 +94,7 @@ class JDHeatColorMixer:NSObject
             }
             //
             let rgb = TargetColor.rgb()
+
             let redRow:UTF8Char = UTF8Char(Int((rgb?.red)!))
             let GreenRow:UTF8Char = UTF8Char(Int((rgb?.green)!))
             let BlueRow:UTF8Char = UTF8Char(Int((rgb?.blue)!))
@@ -149,7 +145,7 @@ class JDHeatColorMixer:NSObject
                     break
                 }
                 Index += 1
-                counter  += AverageWeight
+                counter += AverageWeight
             }
             if(RDiff > 1) { fatalError("RDiff Error") }
             let LDiff = 1.0 - RDiff
@@ -161,22 +157,21 @@ class JDHeatColorMixer:NSObject
                 let LRed:Float = (LCGColor?.red)!
                 let LGreen:Float = (LCGColor?.green)!
                 let LBlue:Float = (LCGColor?.blue)!
+                
                 let RCGColor = TargetColor[1].rgb()
                 let RRed:Float = (RCGColor?.red)!
                 let RGreen:Float = (RCGColor?.green)!
                 let RBlue:Float = (RCGColor?.blue)!
                 
                 //
-                let redRow:UTF8Char = UTF8Char(Int(LRed * LDiff + RRed * RDiff))
-                let GreenRow:UTF8Char = UTF8Char(Int(LGreen * LDiff + RGreen * RDiff))
-                let BlueRow:UTF8Char = UTF8Char(Int(LBlue * LDiff + RBlue * RDiff))
-                if(BlueRow == 255) {
-                
-                }
+                let redRow:UTF8Char = UTF8Char(Float(LRed * LDiff + RRed * RDiff) * D)
+                let GreenRow:UTF8Char = UTF8Char(Float(LGreen * LDiff + RGreen * RDiff) * D)
+                let BlueRow:UTF8Char = UTF8Char(Float(LBlue * LDiff + RBlue * RDiff) * D)
+              
                 return BytesRGB(redRow: redRow,
                                             greenRow: GreenRow,
                                             BlueRow: BlueRow,
-                                            alpha: 255)
+                                            alpha: UTF8Char(D * 255))
             }
             return caculateRGB()
         }

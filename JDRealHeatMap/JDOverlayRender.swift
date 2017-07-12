@@ -138,17 +138,17 @@ class JDRadiusPointOverlayRender:JDHeatOverlayRender
     }
 }
 
-class JDDotPointOverlayRender:JDHeatOverlayRender
+class JDFlatPointOverlayRender:JDHeatOverlayRender
 {    
     override func caculateRowFormData(maxHeat level:Int)->(data:[RowFormHeatData],rect:CGRect)?
     {
-        guard let DotPointoverlay = overlay as? JDHeatDotPointOverlay else {
+        guard let FlatPointoverlay = overlay as? JDHeatFlatPointOverlay else {
             return nil
         }
         //
         var rowformArr:[RowFormHeatData] = []
-        let OverlayCGRect:CGRect = rect(for: DotPointoverlay.boundingMapRect)
-        for heatpoint in DotPointoverlay.HeatPointsArray
+        let OverlayCGRect:CGRect = rect(for: FlatPointoverlay.boundingMapRect)
+        for heatpoint in FlatPointoverlay.HeatPointsArray
         {
             let mkmappoint = heatpoint.MidMapPoint
             let GlobalCGpoint:CGPoint = self.point(for: mkmappoint)
@@ -157,7 +157,11 @@ class JDDotPointOverlayRender:JDHeatOverlayRender
             let localY = GlobalCGpoint.y - (OverlayCGRect.origin.y)
             let loaclCGPoint = CGPoint(x: localX, y: localY)
             //
-            let newRow:RowFormHeatData = RowFormHeatData(heatlevel: Float(heatpoint.HeatLevel) / Float(level), localCGpoint: loaclCGPoint, radius: 0.0)
+            let radiusinMKDistanse:Double = heatpoint.radiusInMKDistance
+            let radiusmaprect = MKMapRect(origin: MKMapPoint.init(), size: MKMapSize(width: radiusinMKDistanse, height: radiusinMKDistanse))
+            let radiusCGDistance = rect(for: radiusmaprect).width
+            //
+            let newRow:RowFormHeatData = RowFormHeatData(heatlevel: Float(heatpoint.HeatLevel) / Float(level), localCGpoint: loaclCGPoint, radius: radiusCGDistance)
             rowformArr.append(newRow)
         }
         let cgsize = rect(for: overlay.boundingMapRect)

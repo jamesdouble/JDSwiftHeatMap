@@ -9,9 +9,16 @@
 import Foundation
 import MapKit
 
-public enum DataPointType
+public enum JDMapType
 {
-    case DotPoint
+    case RadiusDistinct
+    case FlatDistinct
+    case RadiusBlurry
+}
+
+enum DataPointType
+{
+    case FlatPoint
     case RadiusPoint
 }
 
@@ -31,26 +38,25 @@ public class JDRealHeatMap:MKMapView
         }
     }
     
-    
-    public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .RadiusPoint,mixermode mode:ColorMixerMode = .DistinctMode) {
+    public init(frame: CGRect,delegate d:JDHeatMapDelegate,maptype type:JDMapType,BasicColors array:[UIColor] = [UIColor.blue,UIColor.green,UIColor.red],devideLevel:Int = 2)
+    {
         super.init(frame: frame)
-        JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: [UIColor.blue,UIColor.green,UIColor.red], level: 2)
         self.showsScale = true
         self.delegate = self
         self.heatmapdelegate = d
-        missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: type,mode: mode)
-        refresh()
-        InitIndicator()
-        
-    }
-    
-    public init(frame: CGRect,delegate d:JDHeatMapDelegate,pointtype type:DataPointType = .RadiusPoint,mixermode mode:ColorMixerMode = .DistinctMode,BasicColors array:[UIColor],devideLevel:Int) {
-        super.init(frame: frame)
         JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: array, level: devideLevel)
-        self.showsScale = true
-        self.delegate = self
-        self.heatmapdelegate = d
-        missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: type,mode: mode)
+        if(type == .RadiusBlurry)
+        {
+            missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: .RadiusPoint,mode: .BlurryMode)
+        }
+        else if(type == .FlatDistinct)
+        {
+            missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: .FlatPoint,mode: .DistinctMode)
+        }
+        else if(type == .RadiusDistinct)
+        {
+            missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: .RadiusPoint,mode: .DistinctMode)
+        }
         refresh()
         InitIndicator()
     }
@@ -89,9 +95,9 @@ extension JDRealHeatMap:MKMapViewDelegate
 {
     public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer
     {
-        if let dotOverlay = overlay as? JDHeatDotPointOverlay
+        if let FlatOverlay = overlay as? JDHeatFlatPointOverlay
         {
-            let onlyRender = JDDotPointOverlayRender(heat: dotOverlay)
+            let onlyRender = JDFlatPointOverlayRender(heat: FlatOverlay)
             return onlyRender
         }
         else if let radiusOverlay = overlay as? JDHeatRadiusPointOverlay

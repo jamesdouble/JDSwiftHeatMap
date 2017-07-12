@@ -16,8 +16,7 @@ class JDHeatMapMissionController:NSObject
     var Render_ProducerPair:ProducerFor = [:]
     var jdrealheatmap:JDRealHeatMap!
     var Caculating:Bool = false
-    var Datatype:DataPointType = .DotPoint
-    var Mixertype:ColorMixerMode = .DistinctMode
+    var Datatype:DataPointType = .RadiusPoint
     //
     var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
     var MaxHeatLevelinWholeMap:Int = 0
@@ -28,7 +27,6 @@ class JDHeatMapMissionController:NSObject
     {
         jdrealheatmap = map
         Datatype = t
-        Mixertype = m
         JDRowDataProducer.theColorMixer.mixerMode = m
     }
     
@@ -62,24 +60,24 @@ class JDHeatMapMissionController:NSObject
             MaxHeatLevelinWholeMap = (heat > MaxHeatLevelinWholeMap) ? heat : MaxHeatLevelinWholeMap
             let raius = heatdelegate.heatmap(RadiusInKMFor: i)
             let newHeatPoint:JDHeatPoint = JDHeatPoint(heat: heat, coor: coor, heatradius: raius)
-            if(Datatype == .DotPoint)
+            if(Datatype == .FlatPoint)
             {
                 /*
-                 1.3-1 type = Dot point  there will Only be one overlay
+                 1.3-1 type = Flat point  there will Only be one overlay
                  */
                 func collectToOneOverlay()
                 {
                     if(jdrealheatmap.overlays.count == 1)
                     {
-                        if let dotoverlay = jdrealheatmap.overlays[0] as? JDHeatDotPointOverlay
+                        if let Flatoverlay = jdrealheatmap.overlays[0] as? JDHeatFlatPointOverlay
                         {
-                            dotoverlay.insertHeatpoint(input: newHeatPoint)
+                            Flatoverlay.insertHeatpoint(input: newHeatPoint)
                         }
                         return
                     }
                     else if(jdrealheatmap.overlays.count == 0)
                     {
-                        let BigOverlay = JDHeatDotPointOverlay(first: newHeatPoint)
+                        let BigOverlay = JDHeatFlatPointOverlay(first: newHeatPoint)
                         jdrealheatmap.add(BigOverlay)
                         return
                     }
@@ -159,13 +157,17 @@ class JDHeatMapMissionController:NSObject
         */
         for overlay in jdrealheatmap.overlays
         {
-            if let heatoverlay = overlay as? JDHeatOverlay
+            if let heatoverlay = overlay as? JDHeatRadiusPointOverlay
             {
                 let heatoverlayRect = heatoverlay.boundingMapRect
                 let size = heatoverlayRect.size.height * heatoverlayRect.size.width
                 let biggestize = biggestRegion.size.height * biggestRegion.size.width
                 biggestRegion = (size > biggestize) ? heatoverlayRect : biggestRegion
                 //
+            }
+            else if let heatoverlay = overlay as? JDHeatFlatPointOverlay
+            {
+               biggestRegion = heatoverlay.boundingMapRect
             }
         }
         StartComputRowFormData()
@@ -192,9 +194,9 @@ class JDHeatMapMissionController:NSObject
                         {
                             rawdataproducer  = JDRadiusPointRowDataProducer(size: (OverlayCGRect.size), rowHeatData: LocalFormData)
                         }
-                        else if(Datatype == .DotPoint)
+                        else if(Datatype == .FlatPoint)
                         {
-                            rawdataproducer = JDDotPointRowDataProducer(size: (OverlayCGRect.size), rowHeatData: LocalFormData)
+                            rawdataproducer = JDFlatPointRowDataProducer(size: (OverlayCGRect.size), rowHeatData: LocalFormData)
                         }
                         Render_ProducerPair[render] = rawdataproducer
                         //
@@ -218,13 +220,13 @@ class JDHeatMapMissionController:NSObject
                     }
                 }
             }
-            else if(Datatype == .DotPoint)
+            else if(Datatype == .FlatPoint)
             {
                 if(jdrealheatmap.overlays.count == 1)
                 {
-                    if let dotoverlay = jdrealheatmap.overlays[0] as? JDHeatDotPointOverlay
+                    if let Flatoverlay = jdrealheatmap.overlays[0] as? JDHeatFlatPointOverlay
                     {
-                        OverlayRender(heatoverlay: dotoverlay)
+                        OverlayRender(heatoverlay: Flatoverlay)
                     }
                 }
             }

@@ -17,6 +17,7 @@ class JDHeatOverlay:NSObject, MKOverlay
 {
     var HeatPointsArray:[JDHeatPoint] = []
     var CaculatedMapRect:MKMapRect?
+    
     var coordinate: CLLocationCoordinate2D
     {
         let midMKPoint = MKMapPoint(x: MKMapRectGetMidX(boundingMapRect), y: MKMapRectGetMidY(boundingMapRect))
@@ -102,7 +103,7 @@ class JDHeatRadiusPointOverlay:JDHeatOverlay
     
 }
 
-class JDHeatDotPointOverlay:JDHeatOverlay
+class JDHeatFlatPointOverlay:JDHeatOverlay
 {
     
     /**
