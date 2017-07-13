@@ -13,7 +13,11 @@ You can easily make a highly customized HeatMap.
 ![Alt text](https://raw.githubusercontent.com/jamesdouble/JDSwiftHeatMap/master/Readme_img/jdheatmapDemo.png?token=AJBUU1UA_L_wx5f_E3iRsaUGAh_xg3pCks5Zb1yIwA%3D%3D)
 
 # Installation
+* Cocoapods
 
+```
+	pod 'JDSWiftHeatMap'
+```
 
 
 # Usage
@@ -82,10 +86,22 @@ There are two delegate you need to pay close.
 	```
 	*The default radius in km is 100KM.*
 
+### Notice
+
+More data will cause **large memory using**, should be notice.
+
+## Setting
+
+1. public func setType(type:JDMapType) 
+
+	change the display type, it will refresh automatically.
 	
+2. public func refresh()
+
+	Call this function when data changed.
+	
+3. public var showindicator:Bool
 	 
-	 
-	 
-	 
+	Set the loading indicator showing or not.
 	 
 	 

@@ -29,7 +29,7 @@ public class JDSwiftHeatMap:MKMapView
     var missionController:JDHeatMapMissionController!
     var indicator:UIActivityIndicatorView?
     //
-    var showindicator:Bool = true{
+    public var showindicator:Bool = true{
         didSet{
             if(!showindicator)
             {
@@ -67,6 +67,10 @@ public class JDSwiftHeatMap:MKMapView
     
     public func refresh()
     {
+        if(self.showindicator)
+        {
+            self.indicator?.startAnimating()
+        }
         missionController.ExecuteRefreshMission()
     }
     
@@ -97,14 +101,16 @@ public class JDSwiftHeatMap:MKMapView
         indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
         indicator?.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(indicator!)
-        let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 100)
-        let sizeHeight = NSLayoutConstraint(item: indicator!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 100)
-        let rightCon = NSLayoutConstraint(item: indicator!, attribute: .trailing, relatedBy: .equal, toItem: self, attribute: .trailing, multiplier: 1.0, constant: 0)
-        let BottomCon = NSLayoutConstraint(item: indicator!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0)
+        let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 60)
+        let sizeHeight = NSLayoutConstraint(item: indicator!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 60)
+        let CenterX = NSLayoutConstraint(item: indicator!, attribute: .centerX, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1.0, constant: 0)
+        let CenterY = NSLayoutConstraint(item: indicator!, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1.0, constant: 0)
+        
+        //let rightCon = NSLayoutConstraint(item: indicator!, attribute: .trailing, relatedBy: .equal, toItem: self, attribute: .trailing, multiplier: 1.0, constant: 0)
+        //let BottomCon = NSLayoutConstraint(item: indicator!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0)
         indicator?.addConstraints([sizeWidth,sizeHeight])
-        self.addConstraints([rightCon,BottomCon])
+        self.addConstraints([CenterX,CenterY])
         self.updateConstraints()
-        indicator?.startAnimating()
     }
 }
 
