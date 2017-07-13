@@ -138,7 +138,6 @@ class JDFlatPointRowDataProducer:JDRowDataProducer
             for w in 0..<self.FitnessIntSize.width
             {
                 var destiny:Float = 0
-                var MaxDistance:Float = 0.0
                 for heatpoint in self.rowformdatas
                 {
                     let pixelCGPoint = CGPoint(x: w, y: h)
