@@ -1,6 +1,6 @@
 //
 //  JDOverlayRender.swift
-//  JDRealHeatMap
+//  JDSwiftHeatMap
 //
 //  Created by 郭介騵 on 2017/6/19.
 //  Copyright © 2017年 james12345. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  JDHMMissionController.swift
-//  JDRealHeatMap
+//  JDSwiftHeatMap
 //
 //  Created by 郭介騵 on 2017/6/16.
 //  Copyright © 2017年 james12345. All rights reserved.
@@ -14,7 +14,7 @@ class JDHeatMapMissionController:NSObject
     typealias ProducerFor = [JDHeatOverlayRender:JDRowDataProducer]
     //
     var Render_ProducerPair:ProducerFor = [:]
-    var jdrealheatmap:JDRealHeatMap!
+    var jdswiftheatmap:JDSwiftHeatMap!
     var Caculating:Bool = false
     var Datatype:DataPointType = .RadiusPoint
     //
@@ -23,16 +23,16 @@ class JDHeatMapMissionController:NSObject
     //
     let missionThread = DispatchQueue(label: "MissionThread")
     
-    init(JDRealHeatMap map:JDRealHeatMap,datatype t:DataPointType,mode m:ColorMixerMode)
+    init(JDSwiftHeatMap map:JDSwiftHeatMap,datatype t:DataPointType,mode m:ColorMixerMode)
     {
-        jdrealheatmap = map
+        jdswiftheatmap = map
         Datatype = t
         JDRowDataProducer.theColorMixer.mixerMode = m
     }
     
     func renderFor(overlay:JDHeatOverlay)->JDHeatOverlayRender?
     {
-        return (self.jdrealheatmap.renderer(for: overlay) as? JDHeatOverlayRender)
+        return (self.jdswiftheatmap.renderer(for: overlay) as? JDHeatOverlayRender)
     }
     
     /**
@@ -44,14 +44,14 @@ class JDHeatMapMissionController:NSObject
         /*
            1.1 Call the Delegate
          */
-        guard let heatdelegate = jdrealheatmap.heatmapdelegate else {
+        guard let heatdelegate = jdswiftheatmap.heatmapdelegate else {
             return
         }
         /*
            1.2 Collect New Data
         */
-        jdrealheatmap.removeOverlays(jdrealheatmap.overlays)
-        let datacount = heatdelegate.heatmap(HeatPointCount: jdrealheatmap)
+        jdswiftheatmap.removeOverlays(jdswiftheatmap.overlays)
+        let datacount = heatdelegate.heatmap(HeatPointCount: jdswiftheatmap)
         var id:Int = 1
         for i in 0..<datacount
         {
@@ -67,18 +67,18 @@ class JDHeatMapMissionController:NSObject
                  */
                 func collectToOneOverlay()
                 {
-                    if(jdrealheatmap.overlays.count == 1)
+                    if(jdswiftheatmap.overlays.count == 1)
                     {
-                        if let Flatoverlay = jdrealheatmap.overlays[0] as? JDHeatFlatPointOverlay
+                        if let Flatoverlay = jdswiftheatmap.overlays[0] as? JDHeatFlatPointOverlay
                         {
                             Flatoverlay.insertHeatpoint(input: newHeatPoint)
                         }
                         return
                     }
-                    else if(jdrealheatmap.overlays.count == 0)
+                    else if(jdswiftheatmap.overlays.count == 0)
                     {
                         let BigOverlay = JDHeatFlatPointOverlay(first: newHeatPoint)
-                        jdrealheatmap.add(BigOverlay)
+                        jdswiftheatmap.add(BigOverlay)
                         return
                     }
                 }
@@ -91,7 +91,7 @@ class JDHeatMapMissionController:NSObject
                  */
                 func CluseToOverlay()
                 {
-                    for overlay in jdrealheatmap.overlays
+                    for overlay in jdswiftheatmap.overlays
                     {
                         let overlaymaprect = overlay.boundingMapRect
                         //Cluse in Old Overlay
@@ -106,7 +106,7 @@ class JDHeatMapMissionController:NSObject
                     }
                     //Create New Overlay,OverlayRender會一起創造
                     let heatoverlay = JDHeatRadiusPointOverlay(first: newHeatPoint)
-                    jdrealheatmap.add(heatoverlay)
+                    jdswiftheatmap.add(heatoverlay)
                 }
                 CluseToOverlay()
             }
@@ -121,13 +121,13 @@ class JDHeatMapMissionController:NSObject
             repeat
             {
                 ReduceBool = false
-                for overlayX in jdrealheatmap.overlays
+                for overlayX in jdswiftheatmap.overlays
                 {
                     guard let heatoverlayX = overlayX as? JDHeatRadiusPointOverlay
                         else{
                             break
                     }
-                    for overlayY  in jdrealheatmap.overlays
+                    for overlayY  in jdswiftheatmap.overlays
                     {
                         if(overlayY.isEqual(overlayX)){continue}
                         let overlayXmaprect = overlayX.boundingMapRect
@@ -142,7 +142,7 @@ class JDHeatMapMissionController:NSObject
                                     heatoverlayX.insertHeatpoint(input: point)
                                 }
                             }
-                            jdrealheatmap.remove(overlayY)
+                            jdswiftheatmap.remove(overlayY)
                             break
                         }
                     }
@@ -155,7 +155,7 @@ class JDHeatMapMissionController:NSObject
             1.4 All Point have Been Classified to Overlay
             1.4.1 Caculate The Region where map should zoom later
         */
-        for overlay in jdrealheatmap.overlays
+        for overlay in jdswiftheatmap.overlays
         {
             if let heatoverlay = overlay as? JDHeatRadiusPointOverlay
             {
@@ -178,7 +178,7 @@ class JDHeatMapMissionController:NSObject
     func StartComputRowFormData()
     {
         print(#function)
-        LastVisibleMapRect = jdrealheatmap.visibleMapRect
+        LastVisibleMapRect = jdswiftheatmap.visibleMapRect
         func computing()
         {
             func OverlayRender(heatoverlay:JDHeatOverlay)
@@ -201,7 +201,7 @@ class JDHeatMapMissionController:NSObject
                         Render_ProducerPair[render] = rawdataproducer
                         //
                         let visibleMacRect = biggestRegion 
-                        let MapWidthInUIView = jdrealheatmap.frame.width
+                        let MapWidthInUIView = jdswiftheatmap.frame.width
                         let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
                         rawdataproducer?.reduceSize(scales: scaleUIView_MapRect)
                         return
@@ -212,7 +212,7 @@ class JDHeatMapMissionController:NSObject
             //
             if(Datatype == .RadiusPoint)
             {
-                for overlay in jdrealheatmap.overlays
+                for overlay in jdswiftheatmap.overlays
                 {
                     if let heatoverlay = overlay as? JDHeatRadiusPointOverlay
                     {
@@ -222,9 +222,9 @@ class JDHeatMapMissionController:NSObject
             }
             else if(Datatype == .FlatPoint)
             {
-                if(jdrealheatmap.overlays.count == 1)
+                if(jdswiftheatmap.overlays.count == 1)
                 {
-                    if let Flatoverlay = jdrealheatmap.overlays[0] as? JDHeatFlatPointOverlay
+                    if let Flatoverlay = jdswiftheatmap.overlays[0] as? JDHeatFlatPointOverlay
                     {
                         OverlayRender(heatoverlay: Flatoverlay)
                     }
@@ -246,7 +246,7 @@ class JDHeatMapMissionController:NSObject
         self.Caculating = true
         func computing()
         {
-            for overlay in jdrealheatmap.overlays
+            for overlay in jdswiftheatmap.overlays
             {
                 if let heatoverlay = overlay as? JDHeatOverlay
                 {
@@ -264,16 +264,15 @@ class JDHeatMapMissionController:NSObject
                     }
                 }
             }
-            print("done")
             self.Caculating = false
             DispatchQueue.main.sync {
-                if(jdrealheatmap.showindicator)
+                if(jdswiftheatmap.showindicator)
                 {
-                    jdrealheatmap.indicator?.stopAnimating()
+                    jdswiftheatmap.indicator?.stopAnimating()
                 }
                 let ZoomOrigin = MKMapPoint(x: biggestRegion.origin.x - biggestRegion.size.width * 2, y: biggestRegion.origin.y - biggestRegion.size.height * 2)
                 let zoomoutregion = MKMapRect(origin: ZoomOrigin, size: MKMapSize(width: biggestRegion.size.width * 4, height: biggestRegion.size.height * 4))
-                jdrealheatmap.setVisibleMapRect(zoomoutregion, animated: true)
+                jdswiftheatmap.setVisibleMapRect(zoomoutregion, animated: true)
             }
         }
         computing()
@@ -287,7 +286,7 @@ extension JDHeatMapMissionController
     func mapViewWillStartRenderingMap()
     {
         if(Caculating) {return} //If last time rendering not finishe yet...
-        let visibleMacRect = jdrealheatmap.visibleMapRect
+        let visibleMacRect = jdswiftheatmap.visibleMapRect
         if(visibleMacRect.size.width == biggestRegion.size.width &&
             visibleMacRect.origin.x == biggestRegion.origin.x &&
             visibleMacRect.origin.y == biggestRegion.origin.y) {return}
@@ -297,14 +296,14 @@ extension JDHeatMapMissionController
         print(#function)
         self.Caculating = true
         LastVisibleMapRect = visibleMacRect
-        if(jdrealheatmap.showindicator)
+        if(jdswiftheatmap.showindicator)
         {
-            jdrealheatmap.indicator?.startAnimating()
+            jdswiftheatmap.indicator?.startAnimating()
         }
         //
         func compuing()
         {
-            for overlay in jdrealheatmap.overlays
+            for overlay in jdswiftheatmap.overlays
             {
                 if let heatoverlay = overlay as? JDHeatOverlay
                 {
@@ -312,7 +311,7 @@ extension JDHeatMapMissionController
                     {
                         if let render = renderFor(overlay: heatoverlay)
                         {
-                            let MapWidthInUIView = jdrealheatmap.frame.width
+                            let MapWidthInUIView = jdswiftheatmap.frame.width
                             let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
                             if let rawdataproducer = Render_ProducerPair[render]
                             {
@@ -336,7 +335,6 @@ extension JDHeatMapMissionController
                                 render.dataReference.append(contentsOf: rawdataproducer.RowData)
                                 render.setNeedsDisplay()
                                 rawdataproducer.rowformdatas = []
-                                print("Done Again")
                             }
                         }
                     }
@@ -348,9 +346,9 @@ extension JDHeatMapMissionController
         missionThread.async(execute: {
             compuing()
             DispatchQueue.main.sync(execute: {
-                if(self.jdrealheatmap.showindicator)
+                if(self.jdswiftheatmap.showindicator)
                 {
-                    self.jdrealheatmap.indicator?.stopAnimating()
+                    self.jdswiftheatmap.indicator?.stopAnimating()
                 }
                 self.Caculating = false
             })

@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  JDRealHeatMap
+//  JDSwiftHeatMap
 //
 //  Created by 郭介騵 on 2017/6/12.
 //  Copyright © 2017年 james12345. All rights reserved.
@@ -11,7 +11,8 @@ import MapKit
 
 class ViewController: UIViewController {
 
-    var map:JDRealHeatMap?
+    @IBOutlet weak var mapsView: UIView!
+    var map:JDSwiftHeatMap?
     var testpointCoor = [CLLocationCoordinate2D(latitude: 27, longitude: 120),CLLocationCoordinate2D(latitude: 25.3, longitude: 119),CLLocationCoordinate2D(latitude: 27, longitude: 120),
         CLLocationCoordinate2D(latitude: 27, longitude: 121)
         ]
@@ -19,15 +20,28 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         addRandomData()
    
-        map = JDRealHeatMap(frame: self.view.frame, delegate: self, maptype: .FlatDistinct)
+        map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .FlatDistinct)
         map?.delegate = self
-        self.view.addSubview(map!)
+        mapsView.addSubview(map!)
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    @IBAction func changeToRaidusD(_ sender: Any) {
+        map?.setType(type: .RadiusDistinct)
+    }
+    
+    @IBAction func ChangeToRadiusB(_ sender: Any) {
+        map?.setType(type: .RadiusBlurry)
+    }
+    
+    @IBAction func ChangeToFlatD(_ sender: Any) {
+        map?.setType(type: .FlatDistinct)
+    }
+    
     
     func addRandomData()
     {
@@ -60,7 +74,7 @@ extension ViewController:MKMapViewDelegate
 
 extension ViewController:JDHeatMapDelegate
 {
-    func heatmap(HeatPointCount heatmap:JDRealHeatMap) -> Int
+    func heatmap(HeatPointCount heatmap:JDSwiftHeatMap) -> Int
     {
         return testpointCoor.count
     }

@@ -70,17 +70,17 @@ There are two delegate you need to pay close.
 	
 2. ***JDHeatMapDelegate***
 	
-	When we talk to Heat Map, the most important thing is ***"Data"*** !
+	When we talk to Heat Map, the most important thing is ***"Data"*** ! You should provide the data you want to display in this delegate.
 	
 	```Swift
 	public protocol JDHeatMapDelegate {
     func heatmap(HeatPointCount heatmap:JDRealHeatMap) -> Int
     func heatmap(HeatLevelFor index:Int) -> Int
-    func heatmap(RadiusInKMFor index:Int) -> Double
+    @Optional func heatmap(RadiusInKMFor index:Int) -> Double
     func heatmap(CoordinateFor index:Int) -> CLLocationCoordinate2D
 	}
 	```
-
+	*The default radius in km is 100KM.*
 
 	
 	 

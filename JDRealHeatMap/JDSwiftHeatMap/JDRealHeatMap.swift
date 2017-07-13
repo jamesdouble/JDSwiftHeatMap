@@ -1,6 +1,6 @@
 //
-//  JDRealHeatMap.swift
-//  JDRealHeatMap
+//  JDSwiftHeatMap.swift
+//  JDSwiftHeatMap
 //
 //  Created by 郭介騵 on 2017/6/12.
 //  Copyright © 2017年 james12345. All rights reserved.
@@ -23,7 +23,7 @@ enum DataPointType
 }
 
 
-public class JDRealHeatMap:MKMapView
+public class JDSwiftHeatMap:MKMapView
 {
     var heatmapdelegate: JDHeatMapDelegate?
     var missionController:JDHeatMapMissionController!
@@ -47,15 +47,15 @@ public class JDRealHeatMap:MKMapView
         JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: array, level: devideLevel)
         if(type == .RadiusBlurry)
         {
-            missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: .RadiusPoint,mode: .BlurryMode)
+            missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .BlurryMode)
         }
         else if(type == .FlatDistinct)
         {
-            missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: .FlatPoint,mode: .DistinctMode)
+            missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .FlatPoint,mode: .DistinctMode)
         }
         else if(type == .RadiusDistinct)
         {
-            missionController = JDHeatMapMissionController(JDRealHeatMap: self, datatype: .RadiusPoint,mode: .DistinctMode)
+            missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .DistinctMode)
         }
         refresh()
         InitIndicator()
@@ -70,6 +70,23 @@ public class JDRealHeatMap:MKMapView
         missionController.ExecuteRefreshMission()
     }
     
+    public func setType(type:JDMapType)
+    {
+        if(type == .RadiusBlurry)
+        {
+            missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .BlurryMode)
+        }
+        else if(type == .FlatDistinct)
+        {
+            missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .FlatPoint,mode: .DistinctMode)
+        }
+        else if(type == .RadiusDistinct)
+        {
+            missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .DistinctMode)
+        }
+        refresh()
+    }
+    
     func reZoomRegion(biggestRegion:MKMapRect)
     {
         self.setRegion(MKCoordinateRegionForMapRect(biggestRegion), animated: true)
@@ -80,8 +97,8 @@ public class JDRealHeatMap:MKMapView
         indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
         indicator?.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(indicator!)
-        let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 80)
-        let sizeHeight = NSLayoutConstraint(item: indicator!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 80)
+        let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 100)
+        let sizeHeight = NSLayoutConstraint(item: indicator!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 100)
         let rightCon = NSLayoutConstraint(item: indicator!, attribute: .trailing, relatedBy: .equal, toItem: self, attribute: .trailing, multiplier: 1.0, constant: 0)
         let BottomCon = NSLayoutConstraint(item: indicator!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0)
         indicator?.addConstraints([sizeWidth,sizeHeight])
@@ -91,7 +108,7 @@ public class JDRealHeatMap:MKMapView
     }
 }
 
-extension JDRealHeatMap:MKMapViewDelegate
+extension JDSwiftHeatMap:MKMapViewDelegate
 {
     
     public func heatmapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer?
@@ -132,7 +149,7 @@ extension JDRealHeatMap:MKMapViewDelegate
 }
 
 public protocol JDHeatMapDelegate {
-    func heatmap(HeatPointCount heatmap:JDRealHeatMap) -> Int
+    func heatmap(HeatPointCount heatmap:JDSwiftHeatMap) -> Int
     func heatmap(HeatLevelFor index:Int) -> Int
     func heatmap(RadiusInKMFor index:Int) -> Double
     func heatmap(CoordinateFor index:Int) -> CLLocationCoordinate2D

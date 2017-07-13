@@ -1,6 +1,6 @@
 //
 //  JDRowDataProducer.swift
-//  JDRealHeatMap
+//  JDSwiftHeatMap
 //
 //  Created by 郭介騵 on 2017/6/14.
 //  Copyright © 2017年 james12345. All rights reserved.
@@ -89,7 +89,7 @@ class JDRadiusPointRowDataProducer:JDRowDataProducer
 {
     override func produceRowData()
     {
-        print(#function + "w:\(FitnessIntSize.width),w:\(FitnessIntSize.height)")
+        //print(#function + "w:\(FitnessIntSize.width),w:\(FitnessIntSize.height)")
         var ByteCount:Int = 0
         for h in 0..<self.FitnessIntSize.height
         {
@@ -131,7 +131,7 @@ class JDFlatPointRowDataProducer:JDRowDataProducer
 {
     override func produceRowData()
     {
-        print(#function + "w:\(FitnessIntSize.width),w:\(FitnessIntSize.height)")
+        //print(#function + "w:\(FitnessIntSize.width),w:\(FitnessIntSize.height)")
         var ByteCount:Int = 0
         for h in 0..<self.FitnessIntSize.height
         {
