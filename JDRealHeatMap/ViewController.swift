@@ -20,7 +20,8 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         addRandomData()
    
-        map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .RadiusDistinct)
+        map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .FlatDistinct)
+        //map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .FlatDistinct, BasicColors: [UIColor.yellow,UIColor.red], devideLevel: 2)
         map?.delegate = self
         mapsView.addSubview(map!)
     }

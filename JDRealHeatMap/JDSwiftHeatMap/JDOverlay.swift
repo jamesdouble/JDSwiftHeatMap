@@ -17,15 +17,13 @@ class JDHeatOverlay:NSObject, MKOverlay
 {
     var HeatPointsArray:[JDHeatPoint] = []
     var CaculatedMapRect:MKMapRect?
-    
+    /* Overlay的中心 */
     var coordinate: CLLocationCoordinate2D
     {
         let midMKPoint = MKMapPoint(x: MKMapRectGetMidX(boundingMapRect), y: MKMapRectGetMidY(boundingMapRect))
         return MKCoordinateForMapPoint(midMKPoint)
     }
-    /*
-     If you project the curved surface of the globe onto a flat surface, what you get is a two-dimensional version of a map where longitude lines appear to be parallel. Such maps are often used to show the entire surface of the globe all at once. An MKMapRect data structure represents a rectangular area as seen on this two-dimensional map.
-     **/
+    /* Overlay涵蓋的範圍 */
     var boundingMapRect: MKMapRect
     {
         guard let BeenCaculatedMapRect = CaculatedMapRect else {
@@ -124,25 +122,27 @@ class JDHeatFlatPointOverlay:JDHeatOverlay
             MinX = MKMapRectGetMinX(BeenCaculatedMapRect)
             MinY = MKMapRectGetMinY(BeenCaculatedMapRect)
             //
-            let heatmappoint = newPoint.MidMapPoint
-            let X =  heatmappoint.x
-            let Y =  heatmappoint.y
-            MaxX = (X > MaxX) ? X : MaxX
-            MaxY = (Y > MaxY) ? Y : MaxY
-            MinX = (X < MinX) ? X : MinX
-            MinY = (Y < MinY) ? Y : MinY
+            let heatmaprect = newPoint.MapRect
+            let tMaxX = MKMapRectGetMaxX(heatmaprect)
+            let tMaxY = MKMapRectGetMaxY(heatmaprect)
+            let tMinX = MKMapRectGetMinX(heatmaprect)
+            let tMinY = MKMapRectGetMinY(heatmaprect)
+            MaxX = (tMaxX > MaxX) ? tMaxX : MaxX
+            MaxY = (tMaxY > MaxY) ? tMaxY : MaxY
+            MinX = (tMinX < MinX) ? tMinX : MinX
+            MinY = (tMinY < MinY) ? tMinY : MinY
         }
         else
         {
             //First Time Caculate Fitst Point Only
-            let heatmappoint = newPoint.MidMapPoint
-            MaxX = heatmappoint.x
-            MaxY = heatmappoint.y
-            MinX = heatmappoint.x
-            MinY = heatmappoint.y
+            let heatmaprect = newPoint.MapRect
+            MaxX = MKMapRectGetMaxX(heatmaprect)
+            MaxY = MKMapRectGetMaxY(heatmaprect)
+            MinX = MKMapRectGetMinX(heatmaprect)
+            MinY = MKMapRectGetMinY(heatmaprect)
         }
         let rect = MKMapRectMake(MinX, MinY, MaxX - MinX, MaxY - MinY)
-        self.CaculatedMapRect = rect
+        CaculatedMapRect = rect
     }
     
 }

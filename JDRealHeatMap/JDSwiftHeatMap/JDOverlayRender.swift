@@ -144,6 +144,7 @@ class JDFlatPointOverlayRender:JDHeatOverlayRender
     {
         guard let FlatPointoverlay = overlay as? JDHeatFlatPointOverlay else {
             return nil
+            
         }
         //
         var rowformArr:[RowFormHeatData] = []

@@ -46,6 +46,7 @@ class JDRowDataProducer:NSObject
     init(size:CGSize,rowHeatData:[RowFormHeatData])
     {
         super.init()
+       
         self.Originrowformdatas = rowHeatData
         self.OriginCGSize = size
     }

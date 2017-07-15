@@ -37,6 +37,15 @@ so you must familiar with.
   self.view.addSubview(map!)
 ```
 
+### With ColorSetting
+```Swift
+  map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .FlatDistinct, BasicColors: [UIColor.yellow,UIColor.red], devideLevel: 2)
+  self.view.addSubview(map!)
+```
+BasicColors is element color array.
+
+Devide Level = How Many Middle Colors between Basic Colors.
+
 ## Delegate - Most Important
 
 There are two delegate you need to pay close.
