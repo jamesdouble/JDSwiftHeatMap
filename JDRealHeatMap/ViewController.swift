@@ -46,7 +46,7 @@ class ViewController: UIViewController {
     
     func addRandomData()
     {
-        for i in 0..<20
+        for _ in 0..<20
         {
             let loti:Double = Double(119) + Double(Float(arc4random()) / Float(UINT32_MAX))
             let lati:Double = Double(25 + arc4random_uniform(4)) + 2 * Double(Float(arc4random()) / Float(UINT32_MAX))
