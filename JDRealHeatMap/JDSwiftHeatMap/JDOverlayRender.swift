@@ -144,7 +144,6 @@ class JDFlatPointOverlayRender:JDHeatOverlayRender
     {
         guard let FlatPointoverlay = overlay as? JDHeatFlatPointOverlay else {
             return nil
-            
         }
         //
         var rowformArr:[RowFormHeatData] = []
@@ -153,7 +152,7 @@ class JDFlatPointOverlayRender:JDHeatOverlayRender
         {
             let mkmappoint = heatpoint.MidMapPoint
             let GlobalCGpoint:CGPoint = self.point(for: mkmappoint)
-            
+            //
             let localX = GlobalCGpoint.x - (OverlayCGRect.origin.x)
             let localY = GlobalCGpoint.y - (OverlayCGRect.origin.y)
             let loaclCGPoint = CGPoint(x: localX, y: localY)

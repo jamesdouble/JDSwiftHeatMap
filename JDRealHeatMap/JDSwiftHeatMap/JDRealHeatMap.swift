@@ -22,7 +22,6 @@ enum DataPointType
     case RadiusPoint
 }
 
-
 public class JDSwiftHeatMap:MKMapView
 {
     var heatmapdelegate: JDHeatMapDelegate?
@@ -44,7 +43,9 @@ public class JDSwiftHeatMap:MKMapView
         self.showsScale = true
         self.delegate = self
         self.heatmapdelegate = d
+        
         JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: array, level: devideLevel)
+        
         if(type == .RadiusBlurry)
         {
             missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .BlurryMode)
@@ -106,8 +107,6 @@ public class JDSwiftHeatMap:MKMapView
         let CenterX = NSLayoutConstraint(item: indicator!, attribute: .centerX, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1.0, constant: 0)
         let CenterY = NSLayoutConstraint(item: indicator!, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1.0, constant: 0)
         
-        //let rightCon = NSLayoutConstraint(item: indicator!, attribute: .trailing, relatedBy: .equal, toItem: self, attribute: .trailing, multiplier: 1.0, constant: 0)
-        //let BottomCon = NSLayoutConstraint(item: indicator!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0)
         indicator?.addConstraints([sizeWidth,sizeHeight])
         self.addConstraints([CenterX,CenterY])
         self.updateConstraints()
