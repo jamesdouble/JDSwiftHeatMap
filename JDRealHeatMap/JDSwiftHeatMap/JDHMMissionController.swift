@@ -14,9 +14,10 @@ class JDHeatMapMissionController:NSObject
     typealias ProducerFor = [JDHeatOverlayRender:JDRowDataProducer]
     //
     var Render_ProducerPair:ProducerFor = [:]
-    var jdswiftheatmap:JDSwiftHeatMap!
+    weak var jdswiftheatmap:JDSwiftHeatMap!
     var Caculating:Bool = false
     var Datatype:DataPointType = .RadiusPoint
+    let MapWidthInUIView:CGFloat
     //
     var biggestRegion:MKMapRect = MKMapRect(origin: MKMapPoint(), size: MKMapSize(width: 0, height: 0))
     var MaxHeatLevelinWholeMap:Int = 0
@@ -27,12 +28,15 @@ class JDHeatMapMissionController:NSObject
     {
         jdswiftheatmap = map
         Datatype = t
+        MapWidthInUIView  = map.frame.width
         JDRowDataProducer.theColorMixer.mixerMode = m
     }
     
     func renderFor(overlay:JDHeatOverlay)->JDHeatOverlayRender?
     {
-        return (self.jdswiftheatmap.renderer(for: overlay) as? JDHeatOverlayRender)
+        let render = self.jdswiftheatmap.renderer(for: overlay)
+        let heartrender = render as? JDHeatOverlayRender
+        return heartrender
     }
     
     /**
@@ -67,18 +71,18 @@ class JDHeatMapMissionController:NSObject
                  */
                 func collectToOneOverlay()
                 {
-                    if(jdswiftheatmap.overlays.count == 1)
+                    if(jdswiftheatmap.overlays.count == 1) ///Haved Overlay
                     {
-                        if let Flatoverlay = jdswiftheatmap.overlays[0] as? JDHeatFlatPointOverlay
+                        if let Flatoverlay = jdswiftheatmap.overlays.first as? JDHeatFlatPointOverlay
                         {
                             Flatoverlay.insertHeatpoint(input: newHeatPoint)
                         }
                         return
                     }
-                    else if(jdswiftheatmap.overlays.count == 0)
+                    else if(jdswiftheatmap.overlays.count == 0) ///First Overlay
                     {
                         let BigOverlay = JDHeatFlatPointOverlay(first: newHeatPoint)
-                        jdswiftheatmap.add(BigOverlay)
+                        jdswiftheatmap.add(BigOverlay, level: MKOverlayLevel.aboveLabels)
                         return
                     }
                 }
@@ -106,17 +110,18 @@ class JDHeatMapMissionController:NSObject
                     }
                     //Create New Overlay,OverlayRender會一起創造
                     let heatoverlay = JDHeatRadiusPointOverlay(first: newHeatPoint)
-                    jdswiftheatmap.add(heatoverlay)
+                    jdswiftheatmap.add(heatoverlay, level: MKOverlayLevel.aboveLabels)
                 }
                 CluseToOverlay()
             }
         }
+        
         if(MaxHeatLevelinWholeMap == 0) { fatalError("Max Heat level should not be 0") }
+        
         /*
          1.3.3  Reduce The Recover Overlay
          */
-        func ReduceOverlay()
-        {
+        func ReduceOverlay(){
             var ReduceBool:Bool = false
             repeat
             {
@@ -151,6 +156,7 @@ class JDHeatMapMissionController:NSObject
             }while(ReduceBool)
         }
         ReduceOverlay()
+        
         /*
             1.4 All Point have Been Classified to Overlay
             1.4.1 Caculate The Region where map should zoom later
@@ -201,13 +207,14 @@ class JDHeatMapMissionController:NSObject
                         Render_ProducerPair[render] = rawdataproducer
                         //
                         let visibleMacRect = biggestRegion 
-                        let MapWidthInUIView = jdswiftheatmap.frame.width
+                        
                         let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
                         rawdataproducer?.reduceSize(scales: scaleUIView_MapRect)
                         return
                     }
                 }
-                fatalError("RenderPair may be wrong")
+                //Nil in iphone 8 & ios11
+               // fatalError("RenderPair may be wrong")
             }
             //
             if(Datatype == .RadiusPoint)
@@ -235,7 +242,6 @@ class JDHeatMapMissionController:NSObject
             computing()
             self.caculateStart()
         })
-        
     }
     /**
      3.0 Most Take time task
@@ -311,7 +317,6 @@ extension JDHeatMapMissionController
                     {
                         if let render = renderFor(overlay: heatoverlay)
                         {
-                            let MapWidthInUIView = jdswiftheatmap.frame.width
                             let scaleUIView_MapRect:Double = Double(MapWidthInUIView) / visibleMacRect.size.width
                             if let rawdataproducer = Render_ProducerPair[render]
                             {

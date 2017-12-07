@@ -27,31 +27,36 @@ class JDHeatColorMixer:NSObject
 {
     var colorArray:[UIColor]  = []
     var mixerMode:ColorMixerMode = .DistinctMode
-    
+    let colorMixerThread = DispatchQueue(label: "ColorMixer.Thread")
     
     init(array:[UIColor],level:Int)
     {
-        let devideLevel = level
-        if(devideLevel == 0) {fatalError("devide level should not be 0")}
-        if(devideLevel == 1) { colorArray = array; return}
-        for index in 0..<array.count
-        {
-            if(index == array.count-1) {break} //LastColor
+        super.init()
+        colorMixerThread.async {
+            [weak self] in
             
-            if let rgb = array[index].rgb(),let rgb2 = array[index+1].rgb()
+            let devideLevel = level
+            if(devideLevel == 0) {fatalError("devide level should not be 0")}
+            if(devideLevel == 1) { self?.colorArray = array; return}
+            for index in 0..<array.count
             {
-                let greenDiff = (rgb2.green - rgb.green) / Float(devideLevel)
-                let redDiff = (rgb2.red - rgb.red) / Float(devideLevel)
-                let blueDiff = (rgb2.blue - rgb.blue) / Float(devideLevel)
-                //Add All Color to array
-                for color1toColor2 in 0..<(devideLevel+1)
+                if(index == array.count-1) {break} //LastColor
+                
+                if let rgb = array[index].rgb(),let rgb2 = array[index+1].rgb()
                 {
-                    let step:Float = Float(color1toColor2)
-                    let red = CGFloat(rgb.red + (redDiff * step)) / 255.0
-                    let green = CGFloat(rgb.green + (greenDiff * step)) / 255.0
-                    let blue = CGFloat(rgb.blue + (blueDiff * step)) / 255.0
-                    let color = UIColor(red:red, green: green, blue: blue, alpha: 1.0)
-                    colorArray.append(color)
+                    let greenDiff = (rgb2.green - rgb.green) / Float(devideLevel)
+                    let redDiff = (rgb2.red - rgb.red) / Float(devideLevel)
+                    let blueDiff = (rgb2.blue - rgb.blue) / Float(devideLevel)
+                    //Add All Color to array
+                    for color1toColor2 in 0..<(devideLevel+1)
+                    {
+                        let step:Float = Float(color1toColor2)
+                        let red = CGFloat(rgb.red + (redDiff * step)) / 255.0
+                        let green = CGFloat(rgb.green + (greenDiff * step)) / 255.0
+                        let blue = CGFloat(rgb.blue + (blueDiff * step)) / 255.0
+                        let color = UIColor(red:red, green: green, blue: blue, alpha: 1.0)
+                        self?.colorArray.append(color)
+                    }
                 }
             }
         }

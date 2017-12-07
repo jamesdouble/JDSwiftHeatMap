@@ -80,11 +80,11 @@
 		4F90C0FE1EEE6C69003706F3 /* JDRealHeatMap */ = {
 			isa = PBXGroup;
 			children = (
-				4FB9F0F41F167047008F8215 /* JDColorMixer.swift */,
+				4FB9F0F81F167047008F8215 /* JDRealHeatMap.swift */,
 				4FB9F0F51F167047008F8215 /* JDHMMissionController.swift */,
+				4FB9F0F41F167047008F8215 /* JDColorMixer.swift */,
 				4FB9F0F61F167047008F8215 /* JDOverlay.swift */,
 				4FB9F0F71F167047008F8215 /* JDOverlayRender.swift */,
-				4FB9F0F81F167047008F8215 /* JDRealHeatMap.swift */,
 				4FB9F0F91F167047008F8215 /* JDRowDataProducer.swift */,
 			);
 			name = JDRealHeatMap;
@@ -123,6 +123,7 @@
 					4F90C0E61EEE6A39003706F3 = {
 						CreatedOnToolsVersion = 8.3.1;
 						DevelopmentTeam = 857SMZQ3R8;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -299,7 +300,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jameskuo12345.JDRealHeatMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -313,7 +315,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jameskuo12345.JDRealHeatMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
