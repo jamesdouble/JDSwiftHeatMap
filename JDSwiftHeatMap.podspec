@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'JDSwiftHeatMap'
-  s.version          = '1.1.0'
+  s.version          = '2.1.0'
   s.summary          = 'You can easily make a highly customized HeatMap'
  
   s.description      = <<-DESC

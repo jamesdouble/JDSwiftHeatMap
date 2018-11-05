@@ -94,12 +94,12 @@ public class JDSwiftHeatMap:MKMapView
     
     func reZoomRegion(biggestRegion:MKMapRect)
     {
-        self.setRegion(MKCoordinateRegionForMapRect(biggestRegion), animated: true)
+        self.setRegion(MKCoordinateRegion.init(biggestRegion), animated: true)
     }
     
     func InitIndicator()
     {
-        indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        indicator = UIActivityIndicatorView(style: .whiteLarge)
         indicator?.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(indicator!)
         let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 60)
@@ -176,7 +176,7 @@ struct JDHeatPoint
     var radiusInKillometer:Double = 100
     var MidMapPoint:MKMapPoint
     {
-        return MKMapPointForCoordinate(self.coordinate)
+        return MKMapPoint(self.coordinate)
     }
     var radiusInMKDistance:Double
     {
