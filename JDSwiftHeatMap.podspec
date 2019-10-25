@@ -14,6 +14,7 @@ You can easily make a highly customized HeatMap.
   s.source           = { :git => 'https://github.com/jamesdouble/JDSwiftHeatMap.git', :tag => s.version.to_s }
  
   s.ios.deployment_target = '9.0'
-  s.source_files = 'JDRealHeatMap/JDSwiftHeatMap/*'
- 
+  s.source_files = 'JDSwiftHeatMap/Classes/**/*'
+  s.swift_version = '5.0.1'
+  s.dependency 'RxSwift', '~> 5.0.0'
 end

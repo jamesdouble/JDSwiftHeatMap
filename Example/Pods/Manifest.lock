@@ -1,0 +1,23 @@
+PODS:
+  - JDSwiftHeatMap (1.1.0):
+    - RxSwift (~> 5.0.0)
+  - RxSwift (5.0.0)
+
+DEPENDENCIES:
+  - JDSwiftHeatMap (from `../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - RxSwift
+
+EXTERNAL SOURCES:
+  JDSwiftHeatMap:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  JDSwiftHeatMap: 6c4386a995ee93f9df1321e335cb8d3371c22261
+  RxSwift: 8b0671caa829a763bbce7271095859121cbd895f
+
+PODFILE CHECKSUM: eefa7c1b6be2851410bdff37fc3de2b8ed453cc5
+
+COCOAPODS: 1.7.5

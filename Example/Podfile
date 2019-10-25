@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'JDSwiftHeatMap_Example' do
+  pod 'JDSwiftHeatMap', :path => '../'
+
+  target 'JDSwiftHeatMap_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
