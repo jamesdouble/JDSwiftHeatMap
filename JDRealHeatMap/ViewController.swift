@@ -20,7 +20,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         addRandomData()
    
-        map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .FlatDistinct)
+        map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .flatDistinct)
         //map = JDSwiftHeatMap(frame: mapsView.frame, delegate: self, maptype: .FlatDistinct, BasicColors: [UIColor.yellow,UIColor.red], devideLevel: 2)
         map?.delegate = self
         mapsView.addSubview(map!)
@@ -32,15 +32,15 @@ class ViewController: UIViewController {
     }
     
     @IBAction func changeToRaidusD(_ sender: Any) {
-        map?.setType(type: .RadiusDistinct)
+        map?.setType(type: .radiusDistinct)
     }
     
     @IBAction func ChangeToRadiusB(_ sender: Any) {
-        map?.setType(type: .RadiusBlurry)
+        map?.setType(type: .radiusBlurry)
     }
     
     @IBAction func ChangeToFlatD(_ sender: Any) {
-        map?.setType(type: .FlatDistinct)
+        map?.setType(type: .flatDistinct)
     }
     
     
