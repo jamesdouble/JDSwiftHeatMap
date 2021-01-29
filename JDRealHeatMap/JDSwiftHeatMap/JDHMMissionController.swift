@@ -82,7 +82,7 @@ class JDHeatMapMissionController:NSObject
                     else if(jdswiftheatmap.overlays.count == 0) ///First Overlay
                     {
                         let BigOverlay = JDHeatFlatPointOverlay(first: newHeatPoint)
-                        jdswiftheatmap.add(BigOverlay, level: MKOverlayLevel.aboveLabels)
+                        jdswiftheatmap.addOverlay(BigOverlay, level: MKOverlayLevel.aboveLabels)
                         return
                     }
                 }
@@ -99,7 +99,7 @@ class JDHeatMapMissionController:NSObject
                     {
                         let overlaymaprect = overlay.boundingMapRect
                         //Cluse in Old Overlay
-                        if(MKMapRectIntersectsRect(overlaymaprect, newHeatPoint.MapRect))
+                        if(overlaymaprect.intersects(newHeatPoint.MapRect))
                         {
                             if let heatoverlay = overlay as? JDHeatRadiusPointOverlay
                             {
@@ -110,7 +110,7 @@ class JDHeatMapMissionController:NSObject
                     }
                     //Create New Overlay,OverlayRender會一起創造
                     let heatoverlay = JDHeatRadiusPointOverlay(first: newHeatPoint)
-                    jdswiftheatmap.add(heatoverlay, level: MKOverlayLevel.aboveLabels)
+                    jdswiftheatmap.addOverlay(heatoverlay, level: MKOverlayLevel.aboveLabels)
                 }
                 CluseToOverlay()
             }
@@ -137,7 +137,7 @@ class JDHeatMapMissionController:NSObject
                         if(overlayY.isEqual(overlayX)){continue}
                         let overlayXmaprect = overlayX.boundingMapRect
                         let overlayYmaprect = overlayY.boundingMapRect
-                        if(MKMapRectIntersectsRect(overlayXmaprect, overlayYmaprect))
+                        if(overlayXmaprect.intersects(overlayYmaprect))
                         {
                             ReduceBool = true
                             if let heatoverlayY = overlayY as? JDHeatRadiusPointOverlay
@@ -147,7 +147,7 @@ class JDHeatMapMissionController:NSObject
                                     heatoverlayX.insertHeatpoint(input: point)
                                 }
                             }
-                            jdswiftheatmap.remove(overlayY)
+                            jdswiftheatmap.removeOverlay(overlayY)
                             break
                         }
                     }

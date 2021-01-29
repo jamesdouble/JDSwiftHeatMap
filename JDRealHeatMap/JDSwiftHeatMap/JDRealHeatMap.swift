@@ -11,9 +11,9 @@ import MapKit
 
 public enum JDMapType
 {
-    case RadiusDistinct
-    case FlatDistinct
-    case RadiusBlurry
+    case radiusDistinct
+    case flatDistinct
+    case radiusBlurry
 }
 
 enum DataPointType
@@ -22,13 +22,13 @@ enum DataPointType
     case RadiusPoint
 }
 
-public class JDSwiftHeatMap:MKMapView
+public class JDSwiftHeatMap: MKMapView
 {
     var heatmapdelegate: JDHeatMapDelegate?
-    var missionController:JDHeatMapMissionController!
-    var indicator:UIActivityIndicatorView?
-    //
-    public var showindicator:Bool = true{
+    var missionController: JDHeatMapMissionController!
+    var indicator: UIActivityIndicatorView?
+    
+    public var showindicator: Bool = true{
         didSet{
             if(!showindicator)
             {
@@ -46,15 +46,15 @@ public class JDSwiftHeatMap:MKMapView
         
         JDRowDataProducer.theColorMixer = JDHeatColorMixer(array: array, level: devideLevel)
         
-        if(type == .RadiusBlurry)
+        if(type == .radiusBlurry)
         {
             missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .BlurryMode)
         }
-        else if(type == .FlatDistinct)
+        else if(type == .flatDistinct)
         {
             missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .FlatPoint,mode: .DistinctMode)
         }
-        else if(type == .RadiusDistinct)
+        else if(type == .radiusDistinct)
         {
             missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .DistinctMode)
         }
@@ -77,15 +77,15 @@ public class JDSwiftHeatMap:MKMapView
     
     public func setType(type:JDMapType)
     {
-        if(type == .RadiusBlurry)
+        if(type == .radiusBlurry)
         {
             missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .BlurryMode)
         }
-        else if(type == .FlatDistinct)
+        else if(type == .flatDistinct)
         {
             missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .FlatPoint,mode: .DistinctMode)
         }
-        else if(type == .RadiusDistinct)
+        else if(type == .radiusDistinct)
         {
             missionController = JDHeatMapMissionController(JDSwiftHeatMap: self, datatype: .RadiusPoint,mode: .DistinctMode)
         }
@@ -94,12 +94,12 @@ public class JDSwiftHeatMap:MKMapView
     
     func reZoomRegion(biggestRegion:MKMapRect)
     {
-        self.setRegion(MKCoordinateRegionForMapRect(biggestRegion), animated: true)
+        self.setRegion(MKCoordinateRegion.init(biggestRegion), animated: true)
     }
     
     func InitIndicator()
     {
-        indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        indicator = UIActivityIndicatorView(style: .whiteLarge)
         indicator?.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(indicator!)
         let sizeWidth = NSLayoutConstraint(item: indicator!, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0.0, constant: 60)
@@ -176,7 +176,7 @@ struct JDHeatPoint
     var radiusInKillometer:Double = 100
     var MidMapPoint:MKMapPoint
     {
-        return MKMapPointForCoordinate(self.coordinate)
+        return MKMapPoint.init(self.coordinate)
     }
     var radiusInMKDistance:Double
     {
