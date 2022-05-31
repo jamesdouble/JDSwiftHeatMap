@@ -16,7 +16,7 @@ You can easily make a highly customized HeatMap.
 * Cocoapods
 
 ```
-	pod 'JDSWiftHeatMap'
+	pod 'JDSwiftHeatMap'
 ```
 
 
